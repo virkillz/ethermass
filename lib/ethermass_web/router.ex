@@ -23,6 +23,7 @@ defmodule EthermassWeb.Router do
     post "/addresses/generate", AddressController, :generate_post
     resources "/addresses", AddressController
 
+    get "/transaction_batch/:id/toggle", TransactionBatchController, :toggle_start
     resources "/transaction_batch", TransactionBatchController
 
     resources "/transaction_plans", TransactionPlanController

@@ -7,8 +7,12 @@
     <%= csrf_meta_tag() %>
     <%= live_title_tag assigns[:page_title] || "Ethermass", suffix: " · Phoenix Framework" %>
     <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/app.css")}/>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/app.js")}></script>
     <script src="https://unpkg.com/feather-icons"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>    
+    
+    
   </head>
   <body>
     <header>
@@ -29,8 +33,16 @@
     </header>
     <%= @inner_content %>
 
-        <script>
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+
+    <script>
       feather.replace()
     </script>
+
+    <script>
+      $(document).ready( function () {
+      $('#myTable').DataTable();
+      } );
+    </script>    
   </body>
 </html>

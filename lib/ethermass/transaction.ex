@@ -207,10 +207,68 @@ defmodule Ethermass.Transaction do
     TransactionBatch.changeset(transaction_batch, attrs)
   end
 
+  def toggle_transaction_batch(%TransactionBatch{} = transaction_batch) do
+    case transaction_batch.status do
+      "unstarted" -> update_transaction_batch(transaction_batch, %{"status" => "in_progress"})
+      "paused" -> update_transaction_batch(transaction_batch, %{"status" => "in_progress"})
+      "in_progress" -> update_transaction_batch(transaction_batch, %{"status" => "paused"})
+      "finished" -> {:error, "Process is already completed."}
+    end
+  end
+
+  def list_in_progress_transaction_batch() do
+    query = from i in TransactionBatch,
+            where: i.status == "in_progress"
+
+    Repo.all(query)
+  end
+
+  def run_all_transaction(%TransactionBatch{} = transaction_batch) do
+    if transaction_batch.status != "in_progress" do
+      {:error, "Transaction Batch is not running."}
+    else
+      query = from i in TransactionPlan,
+              where: i.transaction_batch_id == ^transaction_batch.id,
+              where: i.status == "unstarted"
+
+      Repo.all(query)
+      |> Enum.map(fn x ->
+
+          case x.transaction_type  do
+            "eth_transfer" -> run_send_eth_plan(x)
+            other -> "#{other} is not yet supported"
+          end
+
+      end)
+    end
+  end
+
+  def check_and_update_transaction_batch_complete_status(transaction_batch_id) do
+    batch = get_transaction_batch!(transaction_batch_id)
+
+    case Enum.filter(batch.transaction_plan, fn x -> x.status != "success" end) do
+      [] -> update_transaction_batch(batch, %{"status" => "finished"})
+      _ -> :nothing
+    end
+
+
+  end
+
+  def list_wait_confirmation_transaction_plan() do
+    query = from i in TransactionPlan,
+            where: i.status == "wait_confirmation"
+
+    Repo.all(query)
+  end
+
+  def run_all_wait_for_confirmation(%TransactionPlan{} = plan) do
+    result = Ethermass.get_transaction_status(plan.hash)
+
+    update_transaction_plan(plan, %{"status" => result})
+  end
 
   # Ethermass.Transaction.run_send_eth_plan()
-  def run_send_eth_plan(plan_id) do
-    plan = get_transaction_plan!(plan_id) |> IO.inspect()
+  def run_send_eth_plan(%TransactionPlan{} = plan) do
 
     priv_key = Ethermass.Wallet.get_private_key(plan.from)
 

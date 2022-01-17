@@ -9,6 +9,26 @@ defmodule EthermassWeb.TransactionBatchController do
     render(conn, "index.html", transaction_batch: transaction_batch)
   end
 
+  def toggle_start(conn, %{"id" => id}) do
+    transaction_batch = Transaction.get_transaction_batch!(id)
+
+    case Transaction.toggle_transaction_batch(transaction_batch) do
+      {:ok, _transaction_batch} ->
+        transaction_batch = Transaction.list_transaction_batch()
+        render(conn, "index.html", transaction_batch: transaction_batch)
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        render(conn, "edit.html", transaction_batch: transaction_batch, changeset: changeset)
+
+      {:error, reason} ->
+        transaction_batch = Transaction.list_transaction_batch()
+
+          conn
+          |> put_flash(:error, reason)
+          |> render("index.html", transaction_batch: transaction_batch)
+    end
+  end
+
   def new(conn, _params) do
     changeset = Transaction.change_transaction_batch(%TransactionBatch{})
     render(conn, "new.html", changeset: changeset)
@@ -27,7 +47,7 @@ defmodule EthermassWeb.TransactionBatchController do
   end
 
   def show(conn, %{"id" => id}) do
-    transaction_batch = Transaction.get_transaction_batch!(id) |> IO.inspect()
+    transaction_batch = Transaction.get_transaction_batch!(id)
     render(conn, "show.html", transaction_batch: transaction_batch)
   end
 

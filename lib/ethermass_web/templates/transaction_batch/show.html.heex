@@ -68,9 +68,13 @@
 <%= for transaction_plan <- @transaction_batch.transaction_plan do %>
     <tr>
       <td><%= transaction_plan.id %></td>   
-      <td><%= transaction_plan.from %></td>
-      <td><%= transaction_plan.to %></td>
-      <td><%= transaction_plan.hash %></td>
+      <td><%= truncate_address(transaction_plan.from) %></td>
+      <td><%= truncate_address(transaction_plan.to) %></td>
+      <td>
+      
+      <%= link transaction_plan.hash, to: Ethermass.get_explorer_link(transaction_plan.hash), target: "_blank" %>
+      
+      </td>
       <td><%= transaction_plan.status %></td>
 
       <td>
