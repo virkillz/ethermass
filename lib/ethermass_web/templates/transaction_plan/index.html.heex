@@ -1,0 +1,42 @@
+<h1>Transaction Plans</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Title</th>
+      <th>Type</th>
+      <th>Network</th>      
+      <th>Function</th>
+      <th>From</th>
+      <th>To</th>
+      <th>Hash</th>
+      <th>Status</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for transaction_plan <- @transaction_plans do %>
+    <tr>
+      <td><%= transaction_plan.id %></td>
+      <td><%= transaction_plan.title %></td>
+      <td><%= transaction_plan.transaction_type %></td>
+      <td><%= transaction_plan.function %></td>
+      <td><%= transaction_plan.network %></td>      
+      <td><%= transaction_plan.from %></td>
+      <td><%= transaction_plan.to %></td>
+      <td><%= transaction_plan.hash %></td>
+      <td><%= transaction_plan.status %></td>
+
+      <td>
+        <span><%= link "Show", to: Routes.transaction_plan_path(@conn, :show, transaction_plan) %></span>
+        <span><%= link "Edit", to: Routes.transaction_plan_path(@conn, :edit, transaction_plan) %></span>
+        <span><%= link "Delete", to: Routes.transaction_plan_path(@conn, :delete, transaction_plan), method: :delete, data: [confirm: "Are you sure?"] %></span>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<span><%= link "New Transaction plan", to: Routes.transaction_plan_path(@conn, :new) %></span>

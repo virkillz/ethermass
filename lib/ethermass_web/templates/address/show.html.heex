@@ -1,0 +1,43 @@
+<h1>Address Detail</h1>
+
+<ul>
+
+  <li>
+    <strong>ID:</strong>
+    <%= @address.id %>
+  </li>  
+
+  <li>
+    <strong>Eth address:</strong>
+    <%= @address.eth_address %>
+  </li>
+
+  <li>
+    <strong>ETH balance:</strong>
+    <%= Ethermass.get_eth_balance(@address.eth_address) %>
+  </li>  
+
+  <li>
+    <strong>Label:</strong>
+    <%= @address.label %>
+  </li>  
+
+  <li>
+    <strong>Mneumonic phrase:</strong>
+    <%= @address.mneumonic_phrase %>
+  </li>
+
+  <li>
+    <strong>Public key:</strong>
+    <%= @address.public_key %>
+  </li>
+
+  <li>
+    <strong>Remark:</strong>
+    <%= @address.remark %>
+  </li>
+
+</ul>
+
+<span><%= link "Edit", to: Routes.address_path(@conn, :edit, @address) %></span> |
+<span><%= link "Back", to: Routes.address_path(@conn, :index) %></span>

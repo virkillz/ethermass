@@ -1,0 +1,71 @@
+<.form let={f} for={@changeset} action={@action}>
+  <%= if @changeset.action do %>
+    <div class="alert alert-danger">
+      <p>Oops, something went wrong! Please check the errors below.</p>
+    </div>
+  <% end %>
+
+  <%= label f, :title %>
+  <%= text_input f, :title %>
+  <%= error_tag f, :title %>
+
+  <%= label f, :remark %>
+  <%= textarea f, :remark %>
+  <%= error_tag f, :remark %>
+
+  <%= label f, :transaction_type %>
+  <%= text_input f, :transaction_type %>
+  <%= error_tag f, :transaction_type %>
+
+  <%= label f, :function %>
+  <%= text_input f, :function %>
+  <%= error_tag f, :function %>
+
+  <%= label f, :from %>
+  <%= text_input f, :from %>
+  <%= error_tag f, :from %>
+
+  <%= label f, :to %>
+  <%= text_input f, :to %>
+  <%= error_tag f, :to %>
+
+  <%= label f, :arguments %>
+  <%= textarea f, :arguments %>
+  <%= error_tag f, :arguments %>
+
+  <%= label f, :hash %>
+  <%= text_input f, :hash %>
+  <%= error_tag f, :hash %>
+
+  <%= label f, :network %>
+  <%= text_input f, :network %>
+  <%= error_tag f, :network %>
+
+  <%= label f, :status %>
+  <%= text_input f, :status %>
+  <%= error_tag f, :status %>
+
+  <%= label f, :attempt %>
+  <%= number_input f, :attempt %>
+  <%= error_tag f, :attempt %>
+
+  <%= label f, :value %>
+  <%= number_input f, :value, step: "any" %>
+  <%= error_tag f, :value %>
+
+  <%= label f, :gas_price %>
+  <%= number_input f, :gas_price %>
+  <%= error_tag f, :gas_price %>
+
+  <%= label f, :gas_limit %>
+  <%= number_input f, :gas_limit %>
+  <%= error_tag f, :gas_limit %>
+
+  <%= label f, :gas_fee %>
+  <%= number_input f, :gas_fee %>
+  <%= error_tag f, :gas_fee %>
+
+  <div>
+    <%= submit "Save" %>
+  </div>
+</.form>

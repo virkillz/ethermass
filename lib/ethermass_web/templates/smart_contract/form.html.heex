@@ -1,0 +1,31 @@
+<.form let={f} for={@changeset} action={@action}>
+  <%= if @changeset.action do %>
+    <div class="alert alert-danger">
+      <p>Oops, something went wrong! Please check the errors below.</p>
+    </div>
+  <% end %>
+
+  <%= label f, :network %>
+  <%= select f, :network, [{"Rinkeby", "rinkeby"}, {"Mainnet", "mainnet"}] %>
+  <%= error_tag f, :network %>
+
+  <%= label f, :address %>
+  <%= text_input f, :address %>
+  <%= error_tag f, :address %>
+
+  <%= label f, :label %>
+  <%= text_input f, :label %>
+  <%= error_tag f, :label %>
+
+  <%= label f, :type %>
+  <%= select f, :type, ["ERC721", "ERC20"] %>
+  <%= error_tag f, :type %>
+
+  <%= label f, "ABI JSON" %>
+  <%= textarea f, :abi %>
+  <%= error_tag f, :abi %>
+
+  <div>
+    <%= submit "Save" %>
+  </div>
+</.form>

@@ -1,0 +1,55 @@
+<.form let={f} for={@changeset} action={@action}>
+  <%= if @changeset.action do %>
+    <div class="alert alert-danger">
+      <p>Oops, something went wrong! Please check the errors below.</p>
+    </div>
+  <% end %>
+
+  <%= label f, :title %>
+  <%= text_input f, :title %>
+  <%= error_tag f, :title %>
+
+  <%= label f, :transaction_type %>
+  <%= select f, :transaction_type, ["NFT mint", "ERC20 transfer", "ETH transfer"] %>
+  <%= error_tag f, :transaction_type %>
+
+  <%= label f, :function %>
+  <%= text_input f, :function %>
+  <%= error_tag f, :function %>
+
+  <%= label f, :from %>
+  <%= select f, :from, Ethermass.Wallet.list_addresses |> Enum.map(fn x -> {"#{x.eth_address} (#{x.label})", x.eth_address} end) %>
+  <%= error_tag f, :from %>
+
+  <%= label f, :to %>
+  <%= text_input f, :to %>
+  <%= error_tag f, :to %>
+
+  <%= label f, :arguments %>
+  <%= textarea f, :arguments %>
+  <%= error_tag f, :arguments %>
+
+  <%= label f, :attempt %>
+  <%= number_input f, :attempt %>
+  <%= error_tag f, :attempt %>
+
+  <%= label f, :value %>
+  <%= number_input f, :value, step: "any" %>
+  <%= error_tag f, :value %>
+
+  <%= label f, :remark %>
+  <%= textarea f, :remark %>
+  <%= error_tag f, :remark %>  
+
+  <%= label f, :gas_price %>
+  <%= number_input f, :gas_price %>
+  <%= error_tag f, :gas_price %>
+
+  <%= label f, :gas_limit %>
+  <%= number_input f, :gas_limit %>
+  <%= error_tag f, :gas_limit %>
+
+  <div>
+    <%= submit "Save" %>
+  </div>
+</.form>

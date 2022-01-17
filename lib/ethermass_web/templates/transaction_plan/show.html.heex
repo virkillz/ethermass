@@ -1,0 +1,83 @@
+<h1>Show Transaction plan</h1>
+
+<ul>
+
+  <li>
+    <strong>Title:</strong>
+    <%= @transaction_plan.title %>
+  </li>
+
+  <li>
+    <strong>Remark:</strong>
+    <%= @transaction_plan.remark %>
+  </li>
+
+  <li>
+    <strong>Transaction type:</strong>
+    <%= @transaction_plan.transaction_type %>
+  </li>
+
+  <li>
+    <strong>Function:</strong>
+    <%= @transaction_plan.function %>
+  </li>
+
+  <li>
+    <strong>From:</strong>
+    <%= @transaction_plan.from %>
+  </li>
+
+  <li>
+    <strong>To:</strong>
+    <%= @transaction_plan.to %>
+  </li>
+
+  <li>
+    <strong>Arguments:</strong>
+    <%= @transaction_plan.arguments %>
+  </li>
+
+  <li>
+    <strong>Hash:</strong>
+    <%= @transaction_plan.hash %>
+  </li>
+
+  <li>
+    <strong>Network:</strong>
+    <%= @transaction_plan.network %>
+  </li>
+
+  <li>
+    <strong>Status:</strong>
+    <%= @transaction_plan.status %>
+  </li>
+
+  <li>
+    <strong>Attempt:</strong>
+    <%= @transaction_plan.attempt %>
+  </li>
+
+  <li>
+    <strong>Value:</strong>
+    <%= @transaction_plan.value %>
+  </li>
+
+  <li>
+    <strong>Gas price:</strong>
+    <%= @transaction_plan.gas_price %>
+  </li>
+
+  <li>
+    <strong>Gas limit:</strong>
+    <%= @transaction_plan.gas_limit %>
+  </li>
+
+  <li>
+    <strong>Gas fee:</strong>
+    <%= @transaction_plan.gas_fee %>
+  </li>
+
+</ul>
+
+<span><%= link "Edit", to: Routes.transaction_plan_path(@conn, :edit, @transaction_plan) %></span> |
+<span><%= link "Back", to: Routes.transaction_plan_path(@conn, :index) %></span>

@@ -1,0 +1,32 @@
+<h1>Ethereum Address Book</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Address</th>
+      <th>Label</th>
+      <th>ETH Balance</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for address <- @addresses do %>
+    <tr>
+      <td><%= address.eth_address %></td>
+      <td><%= address.label %></td>
+      <td><%= address.eth_balance |> :erlang.float_to_binary([:compact, decimals: 8]) %></td>
+
+      <td>
+        <span><%= link "Detail", to: Routes.address_path(@conn, :show, address) %></span>
+        <span><%= link "Explorer", to: Ethermass.get_explorer_link(address.eth_address), target: "_blank" %></span>
+        <span><%# link "Edit", to: Routes.address_path(@conn, :edit, address) %></span>
+        <span><%= link "Delete", to: Routes.address_path(@conn, :delete, address), method: :delete, data: [confirm: "Are you sure?"] %></span>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<div><%= link " -> Generate New Address", to: Routes.address_path(@conn, :generate_form) %></div>
+<div><%= link "-> Import Private Key", to: Routes.address_path(@conn, :new) %></div>

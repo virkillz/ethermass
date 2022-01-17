@@ -1,0 +1,86 @@
+<h1>Transaction Batch Detail</h1>
+
+<ul>
+
+  <li>
+    <strong>ID:</strong>
+    <%= @transaction_batch.id %>
+  </li>
+
+  <li>
+    <strong>Title:</strong>
+    <%= @transaction_batch.title %>
+  </li>
+
+  <li>
+    <strong>Type:</strong>
+    <%= @transaction_batch.type %>
+  </li>
+
+  <li>
+    <strong>Gas price:</strong>
+    <%= @transaction_batch.gas_price %>
+  </li>
+
+  <li>
+    <strong>Gas limit:</strong>
+    <%= @transaction_batch.gas_limit %>
+  </li>
+
+  <li>
+    <strong>Network:</strong>
+    <%= @transaction_batch.network %>
+  </li>
+
+  <li>
+    <strong>Created At:</strong>
+    <%= @transaction_batch.inserted_at %>
+  </li>
+
+  <li>
+    <strong>Status:</strong>
+    <%= @transaction_batch.status %>
+  </li>
+
+
+</ul>
+
+<span><%= link "Edit", to: Routes.transaction_batch_path(@conn, :edit, @transaction_batch) %></span> |
+<span><%= link "Back", to: Routes.transaction_batch_path(@conn, :index) %></span>
+
+<div style="margin-top: 100px;"></div>
+
+<h2>Transaction Plans</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>  
+      <th>From</th>
+      <th>To</th>
+      <th>Hash</th>
+      <th>Status</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for transaction_plan <- @transaction_batch.transaction_plan do %>
+    <tr>
+      <td><%= transaction_plan.id %></td>   
+      <td><%= transaction_plan.from %></td>
+      <td><%= transaction_plan.to %></td>
+      <td><%= transaction_plan.hash %></td>
+      <td><%= transaction_plan.status %></td>
+
+      <td>
+        <span><%= link "Show", to: Routes.transaction_plan_path(@conn, :show, transaction_plan) %></span>
+        <span><%# link "Edit", to: Routes.transaction_plan_path(@conn, :edit, transaction_plan) %></span>
+        <span><%= link "Delete", to: Routes.transaction_plan_path(@conn, :delete, transaction_plan), method: :delete, data: [confirm: "Are you sure?"] %></span>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<span><%# link "New Transaction plan", to: Routes.transaction_plan_path(@conn, :new) %></span>

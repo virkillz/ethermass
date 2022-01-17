@@ -1,0 +1,35 @@
+<h1>Listing Smart contracts</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Label</th>
+      <th>Network</th>
+      <th>Address</th>
+      <th>Type</th>      
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for smart_contract <- @smart_contracts do %>
+    <tr>
+      <td><%= smart_contract.id %></td>
+      <td><%= smart_contract.label %></td>
+      <td><%= smart_contract.network %></td>
+      <td><%= smart_contract.address %></td>
+      <td><%= smart_contract.type %></td>
+      
+
+      <td>
+        <span><%= link "Show", to: Routes.smart_contract_path(@conn, :show, smart_contract) %></span>
+        <span><%= link "Edit", to: Routes.smart_contract_path(@conn, :edit, smart_contract) %></span>
+        <span><%= link "Delete", to: Routes.smart_contract_path(@conn, :delete, smart_contract), method: :delete, data: [confirm: "Are you sure?"] %></span>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<span><%= link "New Smart contract", to: Routes.smart_contract_path(@conn, :new) %></span>

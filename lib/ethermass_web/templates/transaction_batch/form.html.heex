@@ -1,0 +1,35 @@
+<.form let={f} for={@changeset} action={@action}>
+  <%= if @changeset.action do %>
+    <div class="alert alert-danger">
+      <p>Oops, something went wrong! Please check the errors below.</p>
+    </div>
+  <% end %>
+
+  <%= label f, :title %>
+  <%= text_input f, :title %>
+  <%= error_tag f, :title %>
+
+  <%= label f, :network %>
+  <%= select f, :network, [{"Rinkeby", "rinkeby"}, {"Mainnet", "mainnet"}] %>
+  <%= error_tag f, :network %>  
+
+  <%= label f, :type %>
+  <%= select f, :type, ["NFT mint", "ERC20 transfer", "ETH transfer"] %>
+  <%= error_tag f, :type %>
+
+  <%= label f, "Gas Price (GWEI)" %>
+  <%= number_input f, :gas_price %>
+  <%= error_tag f, :gas_price %>
+
+  <%= label f, "gas limit (unit)" %>
+  <%= number_input f, :gas_limit %>
+  <%= error_tag f, :gas_limit %>
+
+  <%= label f, :status %>
+  <%= select f, :status, [{"Unstarted", "unstarted"}, {"In Progress", "in_progress"}, {"Paused", "paused"}] %>
+  <%= error_tag f, :gas_limit %>  
+
+  <div>
+    <%= submit "Save" %>
+  </div>
+</.form>

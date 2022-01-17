@@ -1,0 +1,5 @@
+<h1>Edit Smart contract</h1>
+
+<%= render "form.html", Map.put(assigns, :action, Routes.smart_contract_path(@conn, :update, @smart_contract)) %>
+
+<span><%= link "Back", to: Routes.smart_contract_path(@conn, :index) %></span>

@@ -1,0 +1,44 @@
+<h1>Smart Contract Detail</h1>
+
+<ul>
+  <li>
+    <strong>ID:</strong>
+    <%= @smart_contract.id %>
+  </li>
+
+  <li>
+    <strong>Label:</strong>
+    <%= @smart_contract.label %>
+  </li>
+
+  <li>
+    <strong>Network:</strong>
+    <%= @smart_contract.network %>
+  </li>
+
+  <li>
+    <strong>Address:</strong>
+    <%= @smart_contract.address %>
+  </li>    
+
+  <li>
+    <strong>Type:</strong>
+    <%= @smart_contract.type %>
+  </li>
+
+  <li>
+    <strong>Metadata:</strong>
+    <%= @smart_contract.metadata %>
+  </li>
+
+  <li>
+    <strong>ABI JSON:</strong>
+    <pre><code>
+    <%= @smart_contract.abi %>
+    </code></pre>
+  </li>
+
+</ul>
+
+<span><%= link "Edit", to: Routes.smart_contract_path(@conn, :edit, @smart_contract) %></span> |
+<span><%= link "Back", to: Routes.smart_contract_path(@conn, :index) %></span>
