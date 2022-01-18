@@ -21,13 +21,15 @@ defmodule Ethermass.Transaction.TransactionPlan do
     field :address_id, :id
     field :transaction_batch_id, :id
 
+    has_one :smart_contracts, Ethermass.Contract.SmartContract
+
     timestamps()
   end
 
   @doc false
   def changeset(transaction_plan, attrs) do
     transaction_plan
-    |> cast(attrs, [:title, :transaction_batch_id, :address_id, :remark, :transaction_type, :function, :from, :to, :arguments, :hash, :network, :status, :attempt, :value, :gas_price, :gas_limit, :gas_fee])
+    |> cast(attrs, [:title, :smart_contract_id, :transaction_batch_id, :address_id, :remark, :transaction_type, :function, :from, :to, :arguments, :hash, :network, :status, :attempt, :value, :gas_price, :gas_limit, :gas_fee])
     |> validate_required([:title, :transaction_type, :from, :to, :network, :value, :gas_price, :gas_limit])
   end
 end

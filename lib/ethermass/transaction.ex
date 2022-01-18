@@ -285,6 +285,33 @@ defmodule Ethermass.Transaction do
     end
   end
 
+  def run_mint_plan(%TransactionPlan{} = plan) do
+
+    priv_key = Ethermass.Wallet.get_private_key(plan.from)
+
+    value = floor(plan.value * 1_000_000_000_000_000_000)
+
+    payload = %{to: plan.to, gas_limit: plan.gas_limit |> to_hex, gas_price: plan.gas_price * 1_000_000_000 |> to_hex, from: plan.from, value: value}
+
+    update_transaction_plan(plan, %{"status" => "started"})
+
+    data =
+      ABI.encode("mint(uint256)", [1])
+      |> Base.encode16(case: :lower)
+
+    params = %{to: @contract, gas_limit: 10_000_000 |> to_hex, gas_price: 3000000000 |> to_hex, from: "0xf86613BCf16C855446409F7F40a1ad9D9AB70A49", value: 500_000_000_000_000, data: "0x" <> data}
+
+    # ETH.send_transaction(params, private_key)
+
+
+
+    # case ETH.send_transaction(data, priv_key) do
+    #   {:ok, hash} -> update_transaction_plan(plan, %{"status" => "wait_confirmation", "hash" => hash})
+    #   error -> IO.inspect(error)
+    #     update_transaction_plan(plan, %{"status" => "failed"})
+    # end
+  end
+
   def to_hex(something) do
     "0x" <> Hexate.encode(something)
   end
@@ -297,6 +324,22 @@ defmodule Ethermass.Transaction do
   end
 
   def create_send_eth_plan(from, to, value, gas_price, title, transaction_batch_id, address_id) do
+    %{
+      "from" => from,
+      "to" => to,
+      "gas_limit" => 30000,
+      "gas_price" => gas_price,
+      "network" => Application.get_env(:ethereumex, :network),
+      "title" => title,
+      "transaction_type" => "ETH transfer",
+      "value" => value,
+      "transaction_batch_id" => transaction_batch_id,
+      "address_id" => address_id
+    }
+    |> create_transaction_plan()
+  end
+
+  def create_mint_plan(from, to, value, gas_price, title, transaction_batch_id, address_id) do
     %{
       "from" => from,
       "to" => to,

@@ -19,8 +19,10 @@ defmodule Ethermass do
     priv = "d34e3af448da5d482166ad413d6978cccdf4a245b8bff8804ab1c4f98c287067"
 
     File.read!("uni_abi.json") |> Jason.decode! |> ABI.parse_specification
+  end
 
-
+  def get_network() do
+    Application.get_env(:ethereumex, :network)
   end
 
   def get_transaction_detail(hash) do
