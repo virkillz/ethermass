@@ -5,14 +5,14 @@ config :ethermass, Ethermass.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
-  database: "ethermass_dev",
+  database: "ethermass_mainnet",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
 
   config :ethereumex,
-  network: "rinkeby",
-  url: "https://rinkeby.infura.io/v3/fb85ea4c06be41ebb69844eb7504e09d"
+  network: "mainnet",
+  url: "https://infura.io/v3/fb85ea4c06be41ebb69844eb7504e09d"
 
 
 # For development, we disable any cache and enable
@@ -26,13 +26,9 @@ config :ethermass, EthermassWeb.Endpoint,
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}, port: 4000],
   check_origin: false,
-  code_reloader: true,
+  code_reloader: false,
   debug_errors: true,
-  secret_key_base: "LAr4814eLXXhLAwwoF+JpdUpNhfP/OxiHxungLzQs8tUEdtvrnrsXw/BfpoYFE2d",
-  watchers: [
-    # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
-  ]
+  secret_key_base: "LAr4814eLXXhLAwwoF+JpdUpNhfP/OxiHxungLzQs8tUEdtvrnrsXw/BfpoYFE2d"
 
 # ## SSL Support
 #
