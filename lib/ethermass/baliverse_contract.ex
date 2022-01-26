@@ -21,6 +21,14 @@ def function_detail(name) do
   Enum.filter(abi, fn {_k,v} -> v["type"] == "function" end) |> Enum.filter(fn {k,_v} -> k == name end)
 end
 
+def function_types() do
+  "uni_abi.json"
+  |> EthContract.parse_abi()
+  |> Enum.filter(fn {_k,v} -> v["type"] == "function" end)
+  |> Enum.filter(fn {_k, v} -> v["stateMutability"] == "view" end)
+  |> Enum.map(fn {k, _v} -> k end)
+end
+
 
 # -----------------
 
@@ -151,16 +159,28 @@ def owner() do
   end
 end
 
-def balanceOf(address) do
-  data =
-  ABI.encode("balanceOf(address)", [address])
-  |> Base.encode16(case: :lower)
+def balance_of(address) do
+  balance_of(address, @contract)
+end
 
-  case Ethereumex.HttpClient.eth_call(%{ data: "0x" <> data, to: @contract }) do
-    {:ok, "0x" <> result} ->
-      ABI.decode("balanceOf(uint256)", result |> Base.decode16!(case: :lower)) |> List.last
+@spec balance_of(binary, any) ::
+        {:error, atom | binary | map} | {:ok, any} | %{optional(<<_::48, _::_*8>>) => any}
+def balance_of(address, contract) do
+  case EthContract.Util.address_to_bytes(address) do
+    {:ok, address} ->
+      data =
+        ABI.encode("balanceOf(address)", [address])
+        |> Base.encode16(case: :lower)
 
-      error -> error
+        case Ethereumex.HttpClient.eth_call(%{ data: "0x" <> data, to: contract }) do
+          {:ok, "0x" <> result} ->
+            result = ABI.decode("balanceOf(uint256)", result |> Base.decode16!(case: :lower)) |> List.last
+
+            {:ok, result}
+
+            error -> error
+        end
+    error -> error
   end
 end
 
@@ -183,13 +203,12 @@ def mint() do
     ABI.encode("mint(uint256)", [1])
     |> Base.encode16(case: :lower)
 
-  private_key = "d34e3af448da5d482166ad413d6978cccdf4a245b8bff8804ab1c4f98c287067"
+  private_key = "6ABA74463967E0BDE1898D70CF00668A17EF15D987EFF4E587F6B1CAB8CF5262"
 
-  params = %{to: @contract, gas_limit: 10_000_000 |> to_hex, gas_price: 3000000000 |> to_hex, from: "0xf86613BCf16C855446409F7F40a1ad9D9AB70A49", value: 500_000_000_000_000, data: "0x" <> data}
+  params = %{to: @contract, gas_limit: 10_000_000 |> to_hex, gas_price: 100_500_000_000 |> to_hex, from: "0xC9C35A8FD6C117BE5619B6E28AD8F50B921E9B10", value: 50_000_000_000_000_000, data: "0x" <> data}
 
   ETH.send_transaction(params, private_key)
 end
-
 
 def to_hex(something) do
   "0x" <> Hexate.encode(something)

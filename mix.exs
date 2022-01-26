@@ -51,7 +51,9 @@ defmodule Ethermass.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:ethereumex, "~> 0.9"},
       {:ex_abi, "~> 0.5"},
-      {:eth, git: "https://github.com/virkillz/eth.git", tag: "0.6.6"}
+      {:httpoison, "~> 1.8"},
+      {:eth, git: "https://github.com/virkillz/eth.git", tag: "0.6.6"},
+      {:csv, "~> 2.4"}
 
     ]
   end

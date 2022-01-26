@@ -2,4 +2,4 @@
 
 <%= render "form.html", Map.put(assigns, :action, Routes.transaction_plan_path(@conn, :update, @transaction_plan)) %>
 
-<span><%= link "Back", to: Routes.transaction_plan_path(@conn, :index) %></span>
+<span><%= link "Back", to: Routes.transaction_plan_path(@conn, :show, @transaction_plan) %></span>

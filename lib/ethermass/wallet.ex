@@ -23,6 +23,85 @@ defmodule Ethermass.Wallet do
     Repo.all(query)
   end
 
+  def list_addresses_only do
+    query = from i in Address,
+          order_by: i.id,
+          select: i.eth_address
+
+    Repo.all(query)
+  end
+
+  def validate_csv_batch_import(file_path) do
+    if File.exists?(file_path) do
+
+      any_error =
+      File.stream!(file_path)
+      |> CSV.decode
+      |> Enum.filter(fn {status, _value} -> status == :error end)
+      |> List.first()
+
+      case any_error do
+        nil ->
+
+        [title | content] =
+          File.stream!(file_path)
+          |> CSV.decode
+          |> Enum.map(fn {_status, value} -> value end)
+
+        if Enum.count(title) == 2 do
+
+          validation =
+            content
+            |> Enum.with_index()
+            |> Enum.map(fn {value, index} ->
+
+            [address, priv_key] = value
+
+            address_error =
+              if String.starts_with?(address, "0x") do
+                ""
+              else
+                "Address in wrong format. "
+              end
+
+
+            private_key_error =
+              case Ethermass.private_key_to_address(priv_key) do
+                {:ok, _addr} -> ""
+                {:error, error} -> error
+              end
+
+
+
+            error = address_error <> private_key_error
+
+            if error == "" do
+              {:ok, value}
+            else
+              {:error, "Error line #{index + 2}. " <> error}
+            end
+
+            end)
+          |> Enum.filter(fn {status, _value} -> status == :error end)
+          |> List.first()
+
+
+          case validation do
+            nil -> {:ok, file_path}
+            {:error, reason} -> {:error, reason}
+          end
+
+        else
+          {:error, "CSV format must be = address,private_key"}
+        end
+
+        {:error, reason} -> {:error, reason}
+      end
+    else
+      {:error, "File cannot be founded."}
+    end
+  end
+
   # Ethermass.Wallet.list_addresses() |> Enum.filter(fn x -> x.id == 3 end) |>
 
   @doc """
@@ -67,6 +146,59 @@ defmodule Ethermass.Wallet do
     |> Repo.insert()
   end
 
+  def batch_import_address(attrs \\ %{}) do
+
+  changeset =
+    %Address{}
+    |> Address.changeset_batch_import(attrs)
+    # |> Repo.insert()
+
+  if changeset.valid? do
+      IO.inspect("bener")
+      file_path = attrs["csv_source"]
+
+
+      [_title | content] =
+      File.stream!(file_path)
+      |> CSV.decode
+      |> Enum.map(fn {_status, value} -> value end)
+
+      content
+      |> Enum.map(fn [address, priv_key] ->
+
+        case Ethermass.private_key_to_address(priv_key) do
+            {:ok, address} ->
+              %{
+                "eth_address" => address.eth_address,
+                "mneumonic_phrase" => address.mnemonic_phrase,
+                "private_key" => address.private_key,
+                "public_key" => address.public_key,
+                "label" => attrs["label"]
+              }
+              |> create_address()
+            {:error, reason} ->
+              IO.inspect("Failed: #{address} . Reason: #{reason}")
+              :error
+        end
+
+       end)
+
+
+    {:ok, "success"}
+  else
+    IO.inspect("salah")
+    {:error, Map.put(changeset, :action, :insert)}
+  end
+
+  end
+
+  def get_address_by(:address, address) do
+    query = from i in Address,
+    where: i.eth_address == ^address
+
+    Repo.one!(query)
+  end
+
   def update_eth_balance(%Address{} = address) do
     case ETH.Query.get_balance(address.eth_address) do
       {:ok, result} ->
@@ -76,12 +208,26 @@ defmodule Ethermass.Wallet do
     end
   end
 
+  def update_nft_balance(%Address{} = address) do
+    case BaliverseContract.balance_of(address.eth_address) do
+      {:ok, result} ->
+        {:ok, updated_address} = update_address(address, %{"nft_balance" => result})
+        updated_address
+      _other -> address
+    end
+  end
+
   def generate_address(attrs \\ %{}) do
-    IO.inspect(attrs)
     %Address{}
     |> Address.changeset_generate(attrs)
     |> generate_address_recursion(attrs)
     # |> Repo.insert()
+  end
+
+  def create_address(attrs \\ %{}) do
+    %Address{}
+    |> Address.changeset(attrs)
+    |> Repo.insert()
   end
 
 

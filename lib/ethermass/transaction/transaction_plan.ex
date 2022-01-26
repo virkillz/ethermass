@@ -20,8 +20,9 @@ defmodule Ethermass.Transaction.TransactionPlan do
     field :value, :float
     field :address_id, :id
     field :transaction_batch_id, :id
+    field :smart_contract_id, :id
 
-    has_one :smart_contracts, Ethermass.Contract.SmartContract
+    has_one :smart_contract, Ethermass.Contract.SmartContract, foreign_key: :smart_contract_id
 
     timestamps()
   end

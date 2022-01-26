@@ -21,16 +21,31 @@ defmodule EthermassWeb.Router do
     get "/addresses/:address/refresh_balance", AddressController, :refresh_eth_balance
     get "/addresses/generate", AddressController, :generate_form
     post "/addresses/generate", AddressController, :generate_post
+
+    get "/addresses/batch_import", AddressController, :batch_import_form
+    post "/addresses/batch_import", AddressController, :batch_import_post
+
+    get "/address/update_nft_balance/:id", AddressController, :update_nft_balance
+    get "/address/update_eth_balance/:id", AddressController, :update_eth_balance
     resources "/addresses", AddressController
 
     get "/transaction_batch/:id/toggle", TransactionBatchController, :toggle_start
     resources "/transaction_batch", TransactionBatchController
+
+    get "/transaction_batch/mass_funding/new", TransactionBatchController, :new_mass_funding
+    post "/transaction_batch/mass_funding", TransactionBatchController, :create_mass_funding
+    get "/transaction_batch/mass_minting/new", TransactionBatchController, :new_mass_minting
+    post "/transaction_batch/mass_minting", TransactionBatchController, :create_mass_minting
+
 
     resources "/transaction_plans", TransactionPlanController
 
     resources "/smart_contracts", SmartContractController
 
     get "/test", PageController, :test
+    get "/mass_funding_index", PageController, :mass_funding_index
+
+
   end
 
   # Other scopes may use custom stacks.

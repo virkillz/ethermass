@@ -1,8 +1,79 @@
+<style>
+
+.card {
+    border-radius: .4rem;
+    display: block;
+    letter-spacing: .1rem;
+    line-height: 3rem;
+    margin-bottom: 2.5rem;
+    text-align: center;
+    padding: 1rem;
+    color: white;
+}
+
+.card-number-big {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+
+</style>
+
+<!--
 <section class="phx-hero">
   <h1><%= gettext "Welcome to %{name}!", name: "Ethermass" %></h1>
   <p>Seize the decentralized world. One batch transaction at a time.</p>
 </section>
 
-<section class="row">
-  
-</section>
+-->
+
+<div class="container">
+
+  <h2>NFT Stats</h2>
+  <div class="row">
+    <div class="column">
+      <div class="card" style="background: #264653;">
+        <div>Minted</div>
+        <div class="card-number-big">243 NFT</div>
+      </div>
+    </div>
+    <div class="column">
+      <div class="card" style="background: #2a9d8f;">
+        <div>Total Minted</div>
+        <div class="card-number-big">243 NFT</div>
+      </div>
+    </div>             
+  </div>
+
+  <h2>Gas Price</h2>
+  <div class="row">
+    <div class="column">
+      <div class="card" style="background: #264653;">
+        <div>Instant</div>
+        <div><%= @gas_cost.instant %> gwei</div>
+      </div>
+    </div>
+    <div class="column">
+      <div class="card" style="background: #2a9d8f;">
+        <div>Fast</div>
+        <div><%= @gas_cost.fast %> gwei</div>
+      </div>
+    </div>
+    <div class="column">
+      <div class="card" style="background: #e9c46a;">
+        <div>Normal</div>
+        <div><%= @gas_cost.normal %> gwei</div>
+      </div>
+    </div>
+    <div class="column">
+      <div class="card" style="background: #f4a261;">
+        <div>Slow</div>
+        <div><%= @gas_cost.slow %> gwei</div>
+      </div>
+    </div>              
+  </div>
+
+
+
+
+</div>

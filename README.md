@@ -18,6 +18,11 @@ Ensure you have following installed:
 - elixir ~> 1.12
 - PostgreSQL ~> 13.0
 
+## TODO
+[] Create scheduler for logic for `mint` in run_all_transaction/1
+[] Create function to create `mint` transaction plan
+[] Create function to run `mint` transaction plan
+[] 
 
 To start your Phoenix server:
 

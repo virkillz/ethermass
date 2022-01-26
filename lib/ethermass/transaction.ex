@@ -7,6 +7,7 @@ defmodule Ethermass.Transaction do
   alias Ethermass.Repo
 
   alias Ethermass.Transaction.TransactionPlan
+  alias Ethermass.Wallet
 
   @doc """
   Returns the list of transaction_plans.
@@ -55,6 +56,143 @@ defmodule Ethermass.Transaction do
     |> Repo.insert()
   end
 
+  # Ethermass.Transaction.validate_csv_mass_funding("mass_funding_template.csv")
+  def validate_csv_mass_funding(file_path) do
+    if File.exists?(file_path) do
+
+      any_error =
+      File.stream!(file_path)
+      |> CSV.decode
+      |> Enum.filter(fn {status, _value} -> status == :error end)
+      |> List.first()
+
+      case any_error do
+        nil ->
+
+        [_title | content] =
+          File.stream!(file_path)
+          |> CSV.decode
+          |> Enum.map(fn {_status, value} -> value end)
+
+
+        validation =
+          content
+          |> Enum.with_index()
+          |> Enum.map(fn {value, index} ->
+
+          all_addresses = Wallet.list_addresses_only()
+
+          [from, to, eth_value] = value
+
+          from_error =
+            if Enum.member?(all_addresses, from) do
+              ""
+            else
+              "from: not exist is address book. "
+            end
+
+          to_error =
+            if Enum.member?(all_addresses, to) do
+              ""
+            else
+              "to: not exist is address book. "
+            end
+
+          eth_value_error =
+            case Float.parse(eth_value) do
+              :error -> "value: must be float. "
+              {_,_} -> ""
+            end
+
+          error = from_error <> to_error <> eth_value_error
+
+          if error == "" do
+            {:ok, value}
+          else
+            {:error, "Error line #{index + 2}. " <> error}
+          end
+
+          end)
+        |> Enum.filter(fn {status, _value} -> status == :error end)
+        |> List.first()
+
+
+        case validation do
+          nil -> {:ok, file_path}
+          {:error, reason} -> {:error, reason}
+        end
+
+        {:error, reason} -> {:error, reason}
+      end
+    else
+      {:error, "File cannot be founded."}
+    end
+  end
+
+  def validate_csv_mass_minting(file_path) do
+    if File.exists?(file_path) do
+
+      any_error =
+      File.stream!(file_path)
+      |> CSV.decode
+      |> Enum.filter(fn {status, _value} -> status == :error end)
+      |> List.first()
+
+      case any_error do
+        nil ->
+
+        [_title | content] =
+          File.stream!(file_path)
+          |> CSV.decode
+          |> Enum.map(fn {_status, value} -> value end)
+
+
+        validation =
+          content
+          |> Enum.with_index()
+          |> Enum.map(fn {value, index} ->
+
+          all_addresses = Wallet.list_addresses_only()
+
+          [from, nft, _group] = value
+
+          from_error =
+            if Enum.member?(all_addresses, from) do
+              ""
+            else
+              "from: not exist is address book. "
+            end
+
+          nft_error =
+            case Integer.parse(nft) do
+              {_,_} -> ""
+              :error -> "nft: must be integer. "
+            end
+
+          error = from_error <> nft_error
+
+          if error == "" do
+            {:ok, value}
+          else
+            {:error, "Error line #{index + 2}. " <> error}
+          end
+
+          end)
+        |> Enum.filter(fn {status, _value} -> status == :error end)
+        |> List.first()
+
+
+        case validation do
+          nil -> {:ok, file_path}
+          {:error, reason} -> {:error, reason}
+        end
+
+        {:error, reason} -> {:error, reason}
+      end
+    else
+      {:error, "File cannot be founded."}
+    end
+  end
   @doc """
   Updates a transaction_plan.
 
@@ -159,6 +297,143 @@ defmodule Ethermass.Transaction do
     |> TransactionBatch.changeset(attrs)
     |> Repo.insert()
   end
+
+  @doc """
+  Creates a transaction_batch for mass funding.
+
+  ## Examples
+
+      iex> create_transaction_batch_mass_funding(%{field: value})
+      {:ok, %TransactionBatch{}}
+
+      iex> create_transaction_batch_mass_funding(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_transaction_batch_mass_funding(attrs \\ %{}) do
+
+
+    transaction_batch_changeset =
+    %TransactionBatch{}
+    |> TransactionBatch.changeset_mass_funding(attrs)
+
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:transaction_batch, transaction_batch_changeset)
+    |> Ecto.Multi.run(:transaction_plan, fn _repo, %{transaction_batch: transaction_batch} ->
+
+      file_path = attrs["csv_source"]
+
+      all_addresses = Ethermass.Wallet.list_addresses()
+
+      [_title | content] =
+      File.stream!(file_path)
+      |> CSV.decode!
+      |> Enum.map(fn x -> x end)
+
+      result =
+        content
+        |> Enum.map(fn [from, to, value] ->
+
+          address =
+            all_addresses
+            |> Enum.filter(fn x -> x.eth_address == from end)
+            |> List.first
+
+          %{
+            "from" => from,
+            "to" => to,
+            "gas_limit" => transaction_batch.gas_limit,
+            "gas_price" => transaction_batch.gas_price,
+            "network" => transaction_batch.network,
+            "title" => transaction_batch.title,
+            "transaction_type" => transaction_batch.type,
+            "value" => value,
+            "transaction_batch_id" => transaction_batch.id,
+            "address_id" => address.id
+          }
+          |> create_transaction_plan()
+        end)
+        |> Enum.filter(fn {status, _value} -> status == :error end)
+
+      if Enum.count(result) > 0 do
+        {:error, "One of the transaction plan creation is failed."}
+      else
+        {:ok, :ok}
+      end
+
+
+    end)
+
+
+    |> Repo.transaction()
+  end
+
+  def create_transaction_batch_mass_minting(attrs \\ %{}) do
+
+
+    transaction_batch_changeset =
+    %TransactionBatch{}
+    |> TransactionBatch.changeset_mass_minting(attrs)
+
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:transaction_batch, transaction_batch_changeset)
+    |> Ecto.Multi.run(:transaction_plan, fn _repo, %{transaction_batch: transaction_batch} ->
+
+      file_path = attrs["csv_source"]
+
+      all_addresses = Ethermass.Wallet.list_addresses()
+
+      [_title | content] =
+      File.stream!(file_path)
+      |> CSV.decode!
+      |> Enum.map(fn x -> x end)
+
+      result =
+        content
+        |> Enum.map(fn [from, nft, notes] ->
+
+          {nft_count, _} = Integer.parse(nft)
+          {minting_cost, _} = Float.parse(attrs["minting_cost"])
+
+          address =
+            all_addresses
+            |> Enum.filter(fn x -> x.eth_address == from end)
+            |> List.first
+
+          %{
+            "from" => from,
+            "to" => transaction_batch.to,
+            "gas_limit" => transaction_batch.gas_limit,
+            "gas_price" => transaction_batch.gas_price,
+            "network" => transaction_batch.network,
+            "title" => transaction_batch.title,
+            "transaction_type" => transaction_batch.type,
+            "value" => nft_count * minting_cost,
+            "argument" => "[#{nft_count}]",
+            "transaction_batch_id" => transaction_batch.id,
+            "address_id" => address.id,
+            "remark" => notes
+          }
+          |> create_transaction_plan()
+        end)
+        |> Enum.filter(fn {status, _value} -> status == :error end)
+
+      if Enum.count(result) > 0 do
+        {:error, "One of the transaction plan creation is failed."}
+      else
+        {:ok, :ok}
+      end
+
+
+    end)
+
+
+    |> Repo.transaction()
+  end
+
+
 
   @doc """
   Updates a transaction_batch.
@@ -283,6 +558,17 @@ defmodule Ethermass.Transaction do
       error -> IO.inspect(error)
         update_transaction_plan(plan, %{"status" => "failed"})
     end
+  end
+
+  # Ethermass.Transaction.fund_address("0xF86613BCF16C855446409F7F40A1AD9D9AB70A49", "0xC9C35A8FD6C117BE5619B6E28AD8F50B921E9B10", 0.1)
+  def fund_address(from, to, value) do
+    priv_key = Ethermass.Wallet.get_private_key(from)
+
+    value = floor(value * 1_000_000_000_000_000_000)
+
+    data = %{to: to, gas_limit: 100_000 |> to_hex, gas_price: 3 * 1_000_000_000 |> to_hex, from: from, value: value}
+
+    ETH.send_transaction(data, priv_key)
   end
 
   def run_mint_plan(%TransactionPlan{} = plan) do

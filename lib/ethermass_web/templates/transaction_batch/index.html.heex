@@ -44,11 +44,13 @@
       <td>
         <span><%= link "Detail", to: Routes.transaction_batch_path(@conn, :show, transaction_batch) %></span>
         <span><%# link "Edit", to: Routes.transaction_batch_path(@conn, :edit, transaction_batch) %></span>
-        <span><%# link "Delete", to: Routes.transaction_batch_path(@conn, :delete, transaction_batch), method: :delete, data: [confirm: "Are you sure?"] %></span>
+        <span><%= link "Delete", to: Routes.transaction_batch_path(@conn, :delete, transaction_batch), method: :delete, data: [confirm: "Are you sure?"] %></span>
       </td>
     </tr>
 <% end %>
   </tbody>
 </table>
 
-<span><%# link "New Transaction batch", to: Routes.transaction_batch_path(@conn, :new) %></span>
+<div><%# link "New Transaction batch", to: Routes.transaction_batch_path(@conn, :new) %></div>
+<div><%= link "Create New Mass Funding", to: Routes.transaction_batch_path(@conn, :new_mass_funding) %></div>
+<div><%= link "Create New Mass Minting", to: Routes.transaction_batch_path(@conn, :new_mass_minting) %></div>

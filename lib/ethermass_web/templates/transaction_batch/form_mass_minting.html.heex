@@ -1,0 +1,35 @@
+<.form let={f} for={@changeset} action={@action}>
+  <%= if @changeset.action do %>
+    <div class="alert alert-danger">
+      <p>Oops, something went wrong! Please check the errors below.</p>
+    </div>
+  <% end %>
+
+  <%= label f, :title %>
+  <%= text_input f, :title %>
+  <%= error_tag f, :title %>
+
+  <%= label f, "Gas Price (GWEI)" %>
+  <%= select f, :gas_price, Etherscan.get_gas_compact() %>
+  <%= error_tag f, :gas_price %>
+
+  <%= label f, "gas limit (unit)" %>
+  <%= number_input f, :gas_limit %>
+  <%= error_tag f, :gas_limit %>
+
+  <%= label f, "minting cost (eth)" %>
+  <%= number_input f, :minting_cost, step: 0.01 %>
+  <%= error_tag f, :minting_cost %>  
+
+  <%= label f, :to %>
+  <%= select f, :to, Ethermass.Contract.list_smart_contracts() |> Enum.map(fn x -> {x.label, x.address} end) %>
+  <%= error_tag f, :to %>
+
+  <%= label f, :csv_source %>
+  <%= text_input f, :csv_source %>
+  <%= error_tag f, :csv_source %>
+
+  <div>
+    <%= submit "Save" %>
+  </div>
+</.form>

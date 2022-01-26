@@ -13,11 +13,6 @@
   </li>
 
   <li>
-    <strong>ETH balance:</strong>
-    <%= Ethermass.get_eth_balance(@address.eth_address) %>
-  </li>  
-
-  <li>
     <strong>Label:</strong>
     <%= @address.label %>
   </li>  
@@ -33,9 +28,34 @@
   </li>
 
   <li>
+    <strong style="color:red;">Private key:</strong>
+    <%= @address.private_key %>
+  </li>  
+
+  <li>
+    <strong>Created at:</strong>
+    <%= @address.inserted_at %>
+  </li> 
+
+  <li>
+    <strong>Updated at:</strong>
+    <%= @address.updated_at %>
+  </li>    
+
+  <li>
     <strong>Remark:</strong>
     <%= @address.remark %>
   </li>
+
+  <li>
+    <strong>ETH balance:</strong>
+    <%= @address.eth_balance %> ETH <span><a href={"/address/update_eth_balance/#{@address.id}"} >[update]</a></span>
+  </li>  
+
+  <li>
+    <strong>Baliverse NFT balance:</strong>
+    <%= @address.nft_balance || 0 %> NFT <span><a href={"/address/update_nft_balance/#{@address.id}"} >[update]</a></span>
+  </li>      
 
 </ul>
 

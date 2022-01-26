@@ -44,10 +44,6 @@ config :logger, :console,
   format: "$time $metadata[$level] $message\n",
   metadata: [:request_id]
 
-config :ethereumex,
-  network: "rinkeby",
-  url: "https://rinkeby.infura.io/v3/fb85ea4c06be41ebb69844eb7504e09d"
-
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 

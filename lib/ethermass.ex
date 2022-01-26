@@ -38,6 +38,76 @@ defmodule Ethermass do
     end
   end
 
+  def private_key_to_address(private_key) do
+    try do
+
+    trimmed_priv_key =
+      if String.starts_with?(private_key, "0x"), do: String.trim_leading(private_key, "0x"), else: private_key
+
+      {:ok, ETH.Wallet.create(trimmed_priv_key)}
+    rescue
+      _ -> {:error, "Private key in wrong format. "}
+    end
+
+  end
+
+  def random() do
+    data =
+    [
+    %{
+      name: "KKB",
+      funder_count: 1,
+      wallet: 50,
+      nft: 200
+    },
+    %{
+      name: "IOG",
+      funder_count: 2,
+      wallet: 100,
+      nft: 400
+    },
+    %{
+      name: "RGN",
+      funder_count: 4,
+      wallet: 200,
+      nft: 800
+    },
+    %{
+      name: "EBIT",
+      funder_count: 2,
+      wallet: 75,
+      nft: 300
+    },
+    %{
+      name: "BBG",
+      funder_count: 2,
+      wallet: 100,
+      nft: 400
+    },
+    %{
+      name: "RSBBI",
+      funder_count: 2,
+      wallet: 100,
+      nft: 400
+    },
+    %{
+      name: "PT",
+      funder_count: 10,
+      wallet: 375,
+      nft: 1500
+    }]
+
+      Enum.map(data, fn x ->
+
+        %{
+          name: x.name,
+          nft_per_wallet: x.nft/x.wallet
+        }
+
+      end)
+  end
+
+
   def get_transaction_status(hash) do
     case Ethereumex.HttpClient.eth_get_transaction_receipt(hash) do
       {:ok, result} ->

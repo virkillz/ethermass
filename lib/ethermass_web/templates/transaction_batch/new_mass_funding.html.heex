@@ -1,0 +1,5 @@
+<h1>New Transaction Batch Mass Funding</h1>
+
+<%= render "form_mass_funding.html", Map.put(assigns, :action, Routes.transaction_batch_path(@conn, :create_mass_funding)) %>
+
+<span><%= link "Back", to: Routes.transaction_batch_path(@conn, :index) %></span>

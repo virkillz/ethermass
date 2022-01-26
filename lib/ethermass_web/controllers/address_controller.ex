@@ -9,6 +9,25 @@ defmodule EthermassWeb.AddressController do
     render(conn, "index.html", addresses: addresses)
   end
 
+  def batch_import_form(conn, _params) do
+    changeset = Wallet.change_address(%Address{})
+    render(conn, "batch_import.html", changeset: changeset)
+  end
+
+  def batch_import_post(conn, %{"address" => address_params}) do
+    IO.inspect("nyampe sini gan")
+    case Wallet.batch_import_address(address_params) do
+      {:ok, _address} ->
+        conn
+        |> put_flash(:info, "Addresses imported successfully.")
+        |> redirect(to: Routes.address_path(conn, :index))
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        IO.inspect(changeset)
+        render(conn, "batch_import.html", changeset: changeset)
+    end
+  end
+
   def new(conn, _params) do
     changeset = Wallet.change_address(%Address{})
     render(conn, "import.html", changeset: changeset)
@@ -44,6 +63,19 @@ defmodule EthermassWeb.AddressController do
   end
 
   def show(conn, %{"id" => id}) do
+    address = Wallet.get_address!(id)
+    # |> Wallet.update_eth_balance()
+
+    render(conn, "show.html", address: address)
+  end
+
+  def update_nft_balance(conn, %{"id" => id}) do
+    address = Wallet.get_address!(id) |> Wallet.update_nft_balance()
+
+    render(conn, "show.html", address: address)
+  end
+
+  def update_eth_balance(conn, %{"id" => id}) do
     address = Wallet.get_address!(id) |> Wallet.update_eth_balance()
 
     render(conn, "show.html", address: address)

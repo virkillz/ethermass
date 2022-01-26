@@ -34,6 +34,56 @@ defmodule EthermassWeb.TransactionBatchController do
     render(conn, "new.html", changeset: changeset)
   end
 
+  def new_mass_funding(conn, _params) do
+    changeset = Transaction.change_transaction_batch(%TransactionBatch{})
+    render(conn, "new_mass_funding.html", changeset: changeset)
+  end
+
+  def create_mass_funding(conn, %{"transaction_batch" => transaction_batch_params}) do
+    IO.inspect(transaction_batch_params)
+    case Transaction.create_transaction_batch_mass_funding(transaction_batch_params) do
+      {:ok, _transaction_batch} ->
+        conn
+        |> put_flash(:info, "Transaction batch created successfully.")
+        |> redirect(to: Routes.transaction_batch_path(conn, :index))
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        render(conn, "new_mass_funding.html", changeset: changeset)
+
+      {:error, :transaction_batch, %Ecto.Changeset{} = changeset, _} ->
+          render(conn, "new_mass_funding.html", changeset: changeset)
+      error ->
+          IO.inspect(error)
+        text(conn, "Error. Check console.")
+    end
+  end
+
+
+  def new_mass_minting(conn, _params) do
+    changeset = Transaction.change_transaction_batch(%TransactionBatch{})
+    render(conn, "new_mass_minting.html", changeset: changeset)
+  end
+
+
+  def create_mass_minting(conn, %{"transaction_batch" => transaction_batch_params}) do
+    case Transaction.create_transaction_batch_mass_minting(transaction_batch_params) do
+      {:ok, _transaction_batch} ->
+        conn
+        |> put_flash(:info, "Transaction batch created successfully.")
+        |> redirect(to: Routes.transaction_batch_path(conn, :index))
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        render(conn, "new_mass_minting.html", changeset: changeset)
+
+      {:error, :transaction_batch, %Ecto.Changeset{} = changeset, _} ->
+          render(conn, "new_mass_minting.html", changeset: changeset)
+      error ->
+          IO.inspect(error)
+        text(conn, "Error. Check console.")
+    end
+  end
+
+
   def create(conn, %{"transaction_batch" => transaction_batch_params}) do
     case Transaction.create_transaction_batch(transaction_batch_params) do
       {:ok, transaction_batch} ->
