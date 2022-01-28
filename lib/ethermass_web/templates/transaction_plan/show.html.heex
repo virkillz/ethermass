@@ -64,7 +64,7 @@
 
   <li>
     <strong>Value:</strong>
-    <%= @transaction_plan.value %>
+    <%= @transaction_plan.value |> :erlang.float_to_binary([:compact, { :decimals, 20 }]) %>
   </li>
 
   <li>

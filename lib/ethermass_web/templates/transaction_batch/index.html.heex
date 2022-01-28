@@ -3,7 +3,6 @@
 <table>
   <thead>
     <tr>
-      <th>Action</th>
       <th>Network</th>
       <th>Title</th>
       <th>Type</th>
@@ -16,22 +15,6 @@
   <tbody>
 <%= for transaction_batch <- @transaction_batch do %>
     <tr>
-      <td>
-        
-        <%= if transaction_batch.status == "in_progress" do %>
-          <a class="share-dialog" href={Routes.transaction_batch_path(@conn, :toggle_start, transaction_batch)} title="Start The Process"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-pause"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg></a>
-        <% else %>  
-
-          <%= if transaction_batch.status == "finished" do %>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="teal" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          <% else %>
-            <a class="share-dialog" href={Routes.transaction_batch_path(@conn, :toggle_start, transaction_batch)} title="Start The Process"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-play"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></a>  
-          <% end %>
-
-        <% end %>
-
-
-      </td>
       <td><%= transaction_batch.network |> String.capitalize %></td>      
       <td><%= transaction_batch.title %></td>
       <td>
@@ -54,3 +37,4 @@
 <div><%# link "New Transaction batch", to: Routes.transaction_batch_path(@conn, :new) %></div>
 <div><%= link "Create New Mass Funding", to: Routes.transaction_batch_path(@conn, :new_mass_funding) %></div>
 <div><%= link "Create New Mass Minting", to: Routes.transaction_batch_path(@conn, :new_mass_minting) %></div>
+<div><%= link "Create New Mass Whitelist", to: Routes.transaction_batch_path(@conn, :new_mass_whitelist) %></div>

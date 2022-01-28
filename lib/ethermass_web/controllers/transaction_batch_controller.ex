@@ -39,6 +39,30 @@ defmodule EthermassWeb.TransactionBatchController do
     render(conn, "new_mass_funding.html", changeset: changeset)
   end
 
+  def new_mass_whitelist(conn, _params) do
+    changeset = Transaction.change_transaction_batch(%TransactionBatch{})
+    render(conn, "new_mass_whitelist.html", changeset: changeset)
+  end
+
+  def create_mass_whitelist(conn, %{"transaction_batch" => transaction_batch_params}) do
+    IO.inspect(transaction_batch_params)
+    case Transaction.create_transaction_batch_mass_whitelist(transaction_batch_params) do
+      {:ok, _transaction_batch} ->
+        conn
+        |> put_flash(:info, "Transaction batch created successfully.")
+        |> redirect(to: Routes.transaction_batch_path(conn, :index))
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        render(conn, "new_mass_whitelist.html", changeset: changeset)
+
+      {:error, :transaction_batch, %Ecto.Changeset{} = changeset, _} ->
+          render(conn, "new_mass_whitelist.html", changeset: changeset)
+      error ->
+          IO.inspect(error)
+        text(conn, "Error. Check console.")
+    end
+  end
+
   def create_mass_funding(conn, %{"transaction_batch" => transaction_batch_params}) do
     IO.inspect(transaction_batch_params)
     case Transaction.create_transaction_batch_mass_funding(transaction_batch_params) do
@@ -98,7 +122,13 @@ defmodule EthermassWeb.TransactionBatchController do
 
   def show(conn, %{"id" => id}) do
     transaction_batch = Transaction.get_transaction_batch!(id)
-    render(conn, "show.html", transaction_batch: transaction_batch)
+
+    case transaction_batch.type do
+      "nft_whitelisting" -> render(conn, "show_batch_whitelist.html", transaction_batch: transaction_batch)
+      _other -> render(conn, "show.html", transaction_batch: transaction_batch)
+    end
+
+
   end
 
   def edit(conn, %{"id" => id}) do

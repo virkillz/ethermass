@@ -21,6 +21,8 @@ defmodule Ethermass.Transaction.TransactionPlan do
     field :address_id, :id
     field :transaction_batch_id, :id
     field :smart_contract_id, :id
+    field :nft_balance, :integer
+    field :whitelist_count, :integer
 
     has_one :smart_contract, Ethermass.Contract.SmartContract, foreign_key: :smart_contract_id
 
@@ -30,7 +32,7 @@ defmodule Ethermass.Transaction.TransactionPlan do
   @doc false
   def changeset(transaction_plan, attrs) do
     transaction_plan
-    |> cast(attrs, [:title, :smart_contract_id, :transaction_batch_id, :address_id, :remark, :transaction_type, :function, :from, :to, :arguments, :hash, :network, :status, :attempt, :value, :gas_price, :gas_limit, :gas_fee])
+    |> cast(attrs, [:title, :nft_balance, :whitelist_count, :smart_contract_id, :transaction_batch_id, :address_id, :remark, :transaction_type, :function, :from, :to, :arguments, :hash, :network, :status, :attempt, :value, :gas_price, :gas_limit, :gas_fee])
     |> validate_required([:title, :transaction_type, :from, :to, :network, :value, :gas_price, :gas_limit])
   end
 end

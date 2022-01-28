@@ -192,6 +192,26 @@ defmodule Ethermass.Wallet do
 
   end
 
+
+  def count_owned_nft() do
+    query = from i in Address,
+            select: sum(i.nft_balance)
+
+    Repo.one(query)
+  end
+
+  # Ethermass.Wallet.update_balance_nft()
+  def update_balance_nft() do
+    list_addresses()
+    |> Enum.each(fn x ->
+
+      :timer.sleep(500);
+      update_nft_balance(x)
+
+    end)
+
+  end
+
   def get_address_by(:address, address) do
     query = from i in Address,
     where: i.eth_address == ^address

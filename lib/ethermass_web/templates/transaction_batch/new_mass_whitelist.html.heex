@@ -1,0 +1,5 @@
+<h1>New Transaction Batch Mass Whitelist</h1>
+
+<%= render "form_mass_whitelist.html", Map.put(assigns, :action, Routes.transaction_batch_path(@conn, :create_mass_whitelist)) %>
+
+<span><%= link "Back", to: Routes.transaction_batch_path(@conn, :index) %></span>

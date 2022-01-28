@@ -1,4 +1,4 @@
-<h1>Transaction Batch Detail</h1>
+<h1>Transaction Batch Whitelisting Detail</h1>
 
 <ul>
 
@@ -57,9 +57,9 @@
     <tr>
       <th>Action</th>  
       <th>ID</th>  
-      <th>From</th>
-      <th>To</th>
-      <th>Value</th>
+      <th>Whitelist Address</th>
+      <th>Target</th>
+      <th>Actual</th>
       <th>Hash</th>
       <th>Status</th>
 
@@ -87,11 +87,11 @@
       </td>    
       <td><%= transaction_plan.id %></td>   
       <td>
-          <%= link truncate_address(transaction_plan.from), to: Ethermass.get_explorer_link(transaction_plan.from), target: "_blank" %>
-      
+          <div> <%= link get_target_address(transaction_plan.arguments), to: Ethermass.get_explorer_link(get_target_address(transaction_plan.arguments)), target: "_blank" %> </div>
+          
       </td>
-      <td><%= truncate_address(transaction_plan.to) %></td>
-      <td><%= transaction_plan.value |> :erlang.float_to_binary([:compact, { :decimals, 20 }]) %></td>
+      <td><%= transaction_plan.whitelist_count || "n/a" %></td>
+      <td><%= transaction_plan.nft_balance || "n/a" %></td>
       <td>
       
       <%= link transaction_plan.hash, to: Ethermass.get_explorer_link(transaction_plan.hash, "tx"), target: "_blank" %>

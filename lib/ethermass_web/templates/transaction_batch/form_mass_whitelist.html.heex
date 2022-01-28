@@ -17,10 +17,6 @@
   <%= number_input f, :gas_limit %>
   <%= error_tag f, :gas_limit %>
 
-  <%= label f, "minting cost (eth)" %>
-  <%= number_input f, :minting_cost, step: 0.000001 %>
-  <%= error_tag f, :minting_cost %>  
-
   <%= label f, :to %>
   <%= select f, :to, Ethermass.Contract.list_smart_contracts() |> Enum.map(fn x -> {x.label, x.address} end) %>
   <%= error_tag f, :to %>

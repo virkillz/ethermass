@@ -36,7 +36,10 @@ defmodule EthermassWeb.Router do
     post "/transaction_batch/mass_funding", TransactionBatchController, :create_mass_funding
     get "/transaction_batch/mass_minting/new", TransactionBatchController, :new_mass_minting
     post "/transaction_batch/mass_minting", TransactionBatchController, :create_mass_minting
+    get "/transaction_batch/mass_whitelist/new", TransactionBatchController, :new_mass_whitelist
+    post "/transaction_batch/mass_whitelist", TransactionBatchController, :create_mass_whitelist
 
+    get "/transaction_plan/:id/run", TransactionPlanController, :run_plan
 
     resources "/transaction_plans", TransactionPlanController
 

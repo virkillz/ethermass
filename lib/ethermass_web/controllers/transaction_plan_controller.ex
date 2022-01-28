@@ -9,6 +9,21 @@ defmodule EthermassWeb.TransactionPlanController do
     render(conn, "index.html", transaction_plans: transaction_plans)
   end
 
+  def run_plan(conn, %{"id" => id}) do
+    transaction_plan = Transaction.get_transaction_plan!(id)
+    case Transaction.run_transaction_plan(transaction_plan) do
+      {:ok, new_transaction_plan} ->
+        conn
+        |> put_flash(:info, "Run successfully")
+        |> redirect(to: Routes.transaction_plan_path(conn, :show, new_transaction_plan))
+      {:error, reason} ->
+        conn
+        |> put_flash(:error, reason)
+        |> redirect(to: Routes.transaction_plan_path(conn, :show, transaction_plan))
+    end
+    # text(conn, "ok")
+  end
+
   def new(conn, _params) do
     changeset = Transaction.change_transaction_plan(%TransactionPlan{})
     render(conn, "new.html", changeset: changeset)

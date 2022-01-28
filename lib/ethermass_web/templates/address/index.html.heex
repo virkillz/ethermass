@@ -17,7 +17,7 @@
     <tr>
       <td><%= address.id %></td>
       <td>
-      <%= link truncate_address(address.eth_address), to: Routes.address_path(@conn, :show, address) %>
+      <%= link address.eth_address, to: Routes.address_path(@conn, :show, address) %>
       </td>
       <td><%= address.label %></td>
       <td><%= address.eth_balance |> :erlang.float_to_binary([:compact, decimals: 8]) %> ETH</td>
@@ -35,5 +35,5 @@
 </table>
 
 <div><%# link " -> Generate New Address", to: Routes.address_path(@conn, :generate_form) %></div>
-<div><%# link "-> Import Private Key", to: Routes.address_path(@conn, :new) %></div>
+<div><%= link "-> Import Private Key", to: Routes.address_path(@conn, :new) %></div>
 <div><%= link "-> Import Batch Private Key", to: Routes.address_path(@conn, :batch_import_form) %></div>

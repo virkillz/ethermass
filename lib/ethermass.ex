@@ -29,11 +29,12 @@ defmodule Ethermass do
     Ethereumex.HttpClient.eth_get_transaction_by_hash(hash)
   end
 
-  def get_explorer_link(address) do
+  def get_explorer_link(address, part \\ "address") do
+
     case Application.get_env(:ethereumex, :network) do
-      "mainnet" -> "https://etherscan.io/address/#{address}"
-      "rinkeby" -> "https://rinkeby.etherscan.io/address/#{address}"
-      "ropsten" -> "https://ropsten.etherscan.io/address/#{address}"
+      "mainnet" -> "https://etherscan.io/#{part}/#{address}"
+      "rinkeby" -> "https://rinkeby.etherscan.io/#{part}/#{address}"
+      "ropsten" -> "https://ropsten.etherscan.io/#{part}/#{address}"
       _ -> "-"
     end
   end

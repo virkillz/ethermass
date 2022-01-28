@@ -44,6 +44,15 @@ defmodule Ethermass.Transaction.TransactionBatch do
     |> validate_mass_funding_csv_source()
   end
 
+  def changeset_mass_whitelisting(transaction_batch, attrs) do
+    transaction_batch
+    |> cast(attrs, [:title, :csv_source, :type, :status, :to, :gas_price, :gas_limit, :network, :value])
+    |> put_change(:type, "nft_whitelisting")
+    |> put_change(:network, Ethermass.get_network())
+    |> validate_required([:title, :gas_price, :gas_limit, :csv_source ])
+    |> validate_mass_whitelisting_csv_source()
+  end
+
   def changeset_mass_minting(transaction_batch, attrs) do
     transaction_batch
     |> cast(attrs, [:title, :csv_source, :to, :gas_price, :gas_limit, :minting_cost])
@@ -60,6 +69,19 @@ defmodule Ethermass.Transaction.TransactionBatch do
       changeset
     else
       case Transaction.validate_csv_mass_funding(csv_file) do
+        {:ok, _} -> changeset
+        {:error, reason} -> add_error(changeset, :csv_source, reason)
+      end
+    end
+  end
+
+  def validate_mass_whitelisting_csv_source(changeset) do
+    csv_file = get_field(changeset, :csv_source)
+
+    if is_nil(csv_file) do
+      changeset
+    else
+      case Transaction.validate_csv_mass_whitelist(csv_file) do
         {:ok, _} -> changeset
         {:error, reason} -> add_error(changeset, :csv_source, reason)
       end

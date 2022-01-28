@@ -34,13 +34,13 @@
     <div class="column">
       <div class="card" style="background: #264653;">
         <div>Minted</div>
-        <div class="card-number-big">243 NFT</div>
+        <div class="card-number-big"><%= @owned_nft %> NFT</div>
       </div>
     </div>
     <div class="column">
       <div class="card" style="background: #2a9d8f;">
         <div>Total Minted</div>
-        <div class="card-number-big">243 NFT</div>
+        <div class="card-number-big"><%= BaliverseContract.call("totalSupply",[]) |> List.first() %> NFT</div>
       </div>
     </div>             
   </div>
@@ -70,7 +70,13 @@
         <div>Slow</div>
         <div><%= @gas_cost.slow %> gwei</div>
       </div>
-    </div>              
+    </div> 
+    <div class="column">
+      <div class="card" style="background: #f4a261;">
+        <div>Base</div>
+        <div><%= round(@gas_price_protocol) %> gwei</div>
+      </div>
+    </div>                  
   </div>
 
 

@@ -14,6 +14,10 @@ config :ethermass, Ethermass.Repo,
   network: "rinkeby",
   url: "https://rinkeby.infura.io/v3/fb85ea4c06be41ebb69844eb7504e09d"
 
+  # config :ethereumex,
+  # network: "mainnet",
+  # url: "https://mainnet.infura.io/v3/fb85ea4c06be41ebb69844eb7504e09d"
+
 
 # For development, we disable any cache and enable
 # debugging and code reloading.

@@ -1,7 +1,9 @@
 defmodule BaliverseContract do
 
 # @contract "0xf4d6F145dCEACa8c49f1b267f29fFEd8dE6B11f2"
-@contract "0x044691575fa502c099c8b61b1e79b225bec89b1f"
+# @contract "0x044691575fa502c099c8b61b1e79b225bec89b1f"
+# @contract "0x0917e55b6eec945d71bcc3bab61451a2cf289fcd"
+@contract "0xA7c90B3fBF944D0c366470Af796E810F9c177230"
 
 
 def all_functions() do
@@ -120,6 +122,17 @@ def only_whitelisted() do
   end
 end
 
+def is_whitelisted(address) do
+  case EthContract.Util.address_to_bytes(address) do
+    {:ok, address} ->
+      case call("whitelistedAddresses", [address]) do
+        {:error, error} -> {:error, error}
+        [result] -> result
+      end
+    error -> error
+  end
+end
+
 def paused() do
   data =
   ABI.encode("paused()", [])
@@ -208,6 +221,26 @@ def mint() do
   params = %{to: @contract, gas_limit: 10_000_000 |> to_hex, gas_price: 100_500_000_000 |> to_hex, from: "0xC9C35A8FD6C117BE5619B6E28AD8F50B921E9B10", value: 50_000_000_000_000_000, data: "0x" <> data}
 
   ETH.send_transaction(params, private_key)
+end
+
+
+def whitelist(address, amount) do
+  case EthContract.Util.address_to_bytes(address) do
+    {:ok, address} ->
+      data =
+        ABI.encode("whitelistUsers(address, uint256)", [address, amount])
+        |> Base.encode16(case: :lower)
+
+    contract = "0xA7c90B3fBF944D0c366470Af796E810F9c177230"
+
+    private_key = "78bfc840e70f4039a62bf9c7bf06d2a9cc2cada6c6cc131d882f2c168d0824f0"
+
+    params = %{to: contract, gas_limit: 10_000_000 |> to_hex, gas_price: 2000000000 |> to_hex, from: "0xBac12164b5e7B2b5f8b66021477c84Ab77250B70", value: 0, data: "0x" <> data}
+
+    ETH.send_transaction(params, private_key)
+
+    error -> error
+  end
 end
 
 def to_hex(something) do

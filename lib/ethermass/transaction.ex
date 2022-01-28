@@ -84,15 +84,18 @@ defmodule Ethermass.Transaction do
 
           [from, to, eth_value] = value
 
+          new_from = "0x" <> (from |> String.trim_leading("0x") |> String.upcase)
+          new_to = "0x" <> (to |> String.trim_leading("0x") |> String.upcase)
+
           from_error =
-            if Enum.member?(all_addresses, from) do
+            if Enum.member?(all_addresses, new_from) do
               ""
             else
-              "from: not exist is address book. "
+              "from: #{new_from} not exist is address book. "
             end
 
           to_error =
-            if Enum.member?(all_addresses, to) do
+            if Enum.member?(all_addresses, new_to) do
               ""
             else
               "to: not exist is address book. "
@@ -156,11 +159,13 @@ defmodule Ethermass.Transaction do
 
           [from, nft, _group] = value
 
+          new_from = "0x" <> (from |> String.trim_leading("0x") |> String.upcase)
+
           from_error =
-            if Enum.member?(all_addresses, from) do
+            if Enum.member?(all_addresses, new_from) do
               ""
             else
-              "from: not exist is address book. "
+              "from: #{new_from} not exist is address book. "
             end
 
           nft_error =
@@ -170,6 +175,74 @@ defmodule Ethermass.Transaction do
             end
 
           error = from_error <> nft_error
+
+          if error == "" do
+            {:ok, value}
+          else
+            {:error, "Error line #{index + 2}. " <> error}
+          end
+
+          end)
+        |> Enum.filter(fn {status, _value} -> status == :error end)
+        |> List.first()
+
+
+        case validation do
+          nil -> {:ok, file_path}
+          {:error, reason} -> {:error, reason}
+        end
+
+        {:error, reason} -> {:error, reason}
+      end
+    else
+      {:error, "File cannot be founded."}
+    end
+  end
+
+
+  def validate_csv_mass_whitelist(file_path) do
+    if File.exists?(file_path) do
+
+      any_error =
+      File.stream!(file_path)
+      |> CSV.decode
+      |> Enum.filter(fn {status, _value} -> status == :error end)
+      |> List.first()
+
+      case any_error do
+        nil ->
+
+        [_title | content] =
+          File.stream!(file_path)
+          |> CSV.decode
+          |> Enum.map(fn {_status, value} -> value end)
+
+          all_addresses = Wallet.list_addresses_only()
+
+        validation =
+          content
+          |> Enum.with_index()
+          |> Enum.map(fn {value, index} ->
+
+
+          [from, _whitelist, amount] = value
+
+          new_from = "0x" <> (from |> String.trim_leading("0x") |> String.upcase)
+
+          from_error =
+            if Enum.member?(all_addresses, new_from) do
+              ""
+            else
+              "from: #{new_from} not exist is address book. "
+            end
+
+          amount_error =
+            case Integer.parse(amount) do
+              {_,_} -> ""
+              :error -> "nft: must be integer. "
+            end
+
+          error = from_error <> amount_error
 
           if error == "" do
             {:ok, value}
@@ -335,14 +408,19 @@ defmodule Ethermass.Transaction do
         content
         |> Enum.map(fn [from, to, value] ->
 
+          new_from = "0x" <> (from |> String.trim_leading("0x") |> String.upcase)
+          new_to = "0x" <> (to |> String.trim_leading("0x") |> String.upcase)
+
+          IO.inspect(new_from)
+
           address =
             all_addresses
-            |> Enum.filter(fn x -> x.eth_address == from end)
+            |> Enum.filter(fn x -> x.eth_address == new_from end)
             |> List.first
 
           %{
-            "from" => from,
-            "to" => to,
+            "from" => new_from,
+            "to" => new_to,
             "gas_limit" => transaction_batch.gas_limit,
             "gas_price" => transaction_batch.gas_price,
             "network" => transaction_batch.network,
@@ -397,13 +475,15 @@ defmodule Ethermass.Transaction do
           {nft_count, _} = Integer.parse(nft)
           {minting_cost, _} = Float.parse(attrs["minting_cost"])
 
+          new_from = "0x" <> (from |> String.trim_leading("0x") |> String.upcase)
+
           address =
             all_addresses
-            |> Enum.filter(fn x -> x.eth_address == from end)
+            |> Enum.filter(fn x -> x.eth_address == new_from end)
             |> List.first
 
           %{
-            "from" => from,
+            "from" => new_from,
             "to" => transaction_batch.to,
             "gas_limit" => transaction_batch.gas_limit,
             "gas_price" => transaction_batch.gas_price,
@@ -411,7 +491,7 @@ defmodule Ethermass.Transaction do
             "title" => transaction_batch.title,
             "transaction_type" => transaction_batch.type,
             "value" => nft_count * minting_cost,
-            "argument" => "[#{nft_count}]",
+            "arguments" => "[#{nft_count}]",
             "transaction_batch_id" => transaction_batch.id,
             "address_id" => address.id,
             "remark" => notes
@@ -433,6 +513,70 @@ defmodule Ethermass.Transaction do
     |> Repo.transaction()
   end
 
+
+  def create_transaction_batch_mass_whitelist(attrs \\ %{}) do
+
+
+    transaction_batch_changeset =
+    %TransactionBatch{}
+    |> TransactionBatch.changeset_mass_whitelisting(attrs)
+
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:transaction_batch, transaction_batch_changeset)
+    |> Ecto.Multi.run(:transaction_plan, fn _repo, %{transaction_batch: transaction_batch} ->
+
+      file_path = attrs["csv_source"]
+
+      all_addresses = Ethermass.Wallet.list_addresses()
+
+      [_title | content] =
+      File.stream!(file_path)
+      |> CSV.decode!
+      |> Enum.map(fn x -> x end)
+
+      result =
+        content
+        |> Enum.map(fn [from, whitelist, amount] ->
+
+          {nft_amount, _} = Integer.parse(amount)
+
+          new_from = "0x" <> (from |> String.trim_leading("0x") |> String.upcase)
+
+          address =
+            all_addresses
+            |> Enum.filter(fn x -> x.eth_address == new_from end)
+            |> List.first
+
+          %{
+            "from" => new_from,
+            "to" => transaction_batch.to,
+            "gas_limit" => transaction_batch.gas_limit,
+            "gas_price" => transaction_batch.gas_price,
+            "network" => transaction_batch.network,
+            "title" => transaction_batch.title,
+            "transaction_type" => transaction_batch.type,
+            "value" => 0,
+            "arguments" => "[#{whitelist},#{nft_amount}]",
+            "transaction_batch_id" => transaction_batch.id,
+            "address_id" => address.id
+          }
+          |> create_transaction_plan()
+        end)
+        |> Enum.filter(fn {status, _value} -> status == :error end)
+
+      if Enum.count(result) > 0 do
+        {:error, "One of the transaction plan creation is failed."}
+      else
+        {:ok, :ok}
+      end
+
+
+    end)
+
+
+    |> Repo.transaction()
+  end
 
 
   @doc """
@@ -509,13 +653,28 @@ defmodule Ethermass.Transaction do
       Repo.all(query)
       |> Enum.map(fn x ->
 
-          case x.transaction_type  do
-            "eth_transfer" -> run_send_eth_plan(x)
-            other -> "#{other} is not yet supported"
-          end
+        :timer.sleep(500);
+        run_transaction_plan(x)
 
       end)
     end
+  end
+
+  # Ethermass.Transaction.run_remaining_transaction(23)
+  def run_remaining_transaction(transaction_batch_id) do
+
+      query = from i in TransactionPlan,
+              where: i.transaction_batch_id == ^transaction_batch_id,
+              where: i.status == "unstarted" and is_nil(i.hash),
+              limit: 100
+
+      Repo.all(query)
+      |> Enum.map(fn x ->
+
+        :timer.sleep(500);
+        run_transaction_plan(x)
+
+      end)
   end
 
   def check_and_update_transaction_batch_complete_status(transaction_batch_id) do
@@ -529,9 +688,11 @@ defmodule Ethermass.Transaction do
 
   end
 
-  def list_wait_confirmation_transaction_plan() do
+  def list_wait_confirmation_transaction_plan(transaction_batch_id) do
     query = from i in TransactionPlan,
-            where: i.status == "wait_confirmation"
+            where: i.transaction_batch_id == ^transaction_batch_id,
+            where: i.status == "wait_confirmation" or i.status == "undefined"
+            # where: i.status == "unstarted"
 
     Repo.all(query)
   end
@@ -539,24 +700,72 @@ defmodule Ethermass.Transaction do
   def run_all_wait_for_confirmation(%TransactionPlan{} = plan) do
     result = Ethermass.get_transaction_status(plan.hash)
 
+    IO.inspect("Plan #{plan.id} : #{result}")
+
     update_transaction_plan(plan, %{"status" => result})
+  end
+
+  # Ethermass.Transaction.update_wait_for_confirmation(23)
+  def update_wait_for_confirmation(transaction_batch_id) do
+    list_wait_confirmation_transaction_plan(transaction_batch_id)
+    |> Enum.map(fn x ->
+
+      :timer.sleep(300);
+
+      run_all_wait_for_confirmation(x)
+    end)
+  end
+
+  # Ethermass.Transaction.get_status_summary(23)
+  def get_status_summary(transaction_batch_id) do
+    query = from i in TransactionPlan,
+            where: i.transaction_batch_id == ^transaction_batch_id
+
+    result = Repo.all(query)
+
+    %{
+      failed_with_tx: result |> Enum.filter(fn x -> x.status == "failed" && not is_nil(x.hash) end) |> Enum.count(),
+      failed_without_tx: result |> Enum.filter(fn x -> x.status == "failed" && is_nil(x.hash) end) |> Enum.count(),
+      success: result |> Enum.filter(fn x -> x.status == "success" end) |> Enum.count(),
+      wait_confirmation: result |> Enum.filter(fn x -> x.status == "wait_confirmation" end) |> Enum.count(),
+      undefined: result |> Enum.filter(fn x -> x.status == "undefined" end) |> Enum.count(),
+      unstarted: result |> Enum.filter(fn x -> x.status == "unstarted" end) |> Enum.count(),
+      total: result |> Enum.count()
+    }
+
+
+  end
+
+  def run_transaction_plan(%TransactionPlan{} = plan) do
+    if is_nil(plan.hash) do
+      case plan.transaction_type do
+        "eth_transfer" -> run_send_eth_plan(plan)
+        "nft_minting" -> run_mint_nft_plan(plan)
+        "nft_whitelisting" -> run_nft_whitelist_plan(plan)
+        _other -> {:error, "Not yet implemented"}
+      end
+    else
+      {:error, "Plan already have tx address."}
+    end
   end
 
   # Ethermass.Transaction.run_send_eth_plan()
   def run_send_eth_plan(%TransactionPlan{} = plan) do
+    case update_transaction_plan(plan, %{"status" => "in_progress"}) do
+      {:ok, plan} ->
+        priv_key = Ethermass.Wallet.get_private_key(plan.from)
 
-    priv_key = Ethermass.Wallet.get_private_key(plan.from)
+        value = floor(plan.value * 1_000_000_000_000_000_000)
 
-    value = floor(plan.value * 1_000_000_000_000_000_000)
+        data = %{to: plan.to, gas_limit: plan.gas_limit |> to_hex, gas_price: plan.gas_price * 1_000_000_000 |> to_hex, from: plan.from, value: value}
 
-    data = %{to: plan.to, gas_limit: plan.gas_limit |> to_hex, gas_price: plan.gas_price * 1_000_000_000 |> to_hex, from: plan.from, value: value}
+        case ETH.send_transaction(data, priv_key) do
+          {:ok, hash} -> update_transaction_plan(plan, %{"status" => "wait_confirmation", "hash" => hash})
+          error -> IO.inspect(error)
+            update_transaction_plan(plan, %{"status" => "failed", "remark" => inspect(error)})
+        end
 
-    update_transaction_plan(plan, %{"status" => "started"})
-
-    case ETH.send_transaction(data, priv_key) do
-      {:ok, hash} -> update_transaction_plan(plan, %{"status" => "wait_confirmation", "hash" => hash})
-      error -> IO.inspect(error)
-        update_transaction_plan(plan, %{"status" => "failed"})
+       {:error, _} -> {:error, "Cannot change status to in_progress"}
     end
   end
 
@@ -571,31 +780,131 @@ defmodule Ethermass.Transaction do
     ETH.send_transaction(data, priv_key)
   end
 
-  def run_mint_plan(%TransactionPlan{} = plan) do
+  def run_mint_nft_plan(%TransactionPlan{} = plan) do
 
     priv_key = Ethermass.Wallet.get_private_key(plan.from)
 
     value = floor(plan.value * 1_000_000_000_000_000_000)
 
-    payload = %{to: plan.to, gas_limit: plan.gas_limit |> to_hex, gas_price: plan.gas_price * 1_000_000_000 |> to_hex, from: plan.from, value: value}
-
-    update_transaction_plan(plan, %{"status" => "started"})
+    update_transaction_plan(plan, %{"status" => "in_progress"})
 
     data =
-      ABI.encode("mint(uint256)", [1])
+      ABI.encode("mint(uint256)", Jason.decode!(plan.arguments))
       |> Base.encode16(case: :lower)
 
-    params = %{to: @contract, gas_limit: 10_000_000 |> to_hex, gas_price: 3000000000 |> to_hex, from: "0xf86613BCf16C855446409F7F40a1ad9D9AB70A49", value: 500_000_000_000_000, data: "0x" <> data}
+    payload = %{to: plan.to, gas_limit: plan.gas_limit |> to_hex, gas_price: plan.gas_price * 1_000_000_000 |> to_hex, from: plan.from, value: value, data: "0x" <> data}
 
+
+    # params = %{to: plan.to, gas_limit: 10_000_000 |> to_hex, gas_price: 3000000000 |> to_hex, from: "0xf86613BCf16C855446409F7F40a1ad9D9AB70A49", value: 500_000_000_000_000, data: "0x" <> data}
+
+    # IO.inspect(payload)
     # ETH.send_transaction(params, private_key)
 
 
 
-    # case ETH.send_transaction(data, priv_key) do
-    #   {:ok, hash} -> update_transaction_plan(plan, %{"status" => "wait_confirmation", "hash" => hash})
-    #   error -> IO.inspect(error)
-    #     update_transaction_plan(plan, %{"status" => "failed"})
-    # end
+    case ETH.send_transaction(payload, priv_key) do
+      {:ok, hash} -> update_transaction_plan(plan, %{"status" => "wait_confirmation", "hash" => hash})
+      error -> IO.inspect(error)
+        update_transaction_plan(plan, %{"status" => "failed", "remark" => inspect(error)})
+    end
+  end
+
+  def run_nft_whitelist_plan(%TransactionPlan{} = plan) do
+
+    priv_key = Ethermass.Wallet.get_private_key(plan.from)
+
+    update_transaction_plan(plan, %{"status" => "in_progress"})
+
+    IO.inspect(plan.arguments)
+
+    [string_address, amount] =
+      plan.arguments
+      |> String.replace("[0", "[\"0")
+      |> String.replace(",", "\",")
+      |> Jason.decode!()
+
+    {:ok, address}  = EthContract.Util.address_to_bytes(string_address)
+
+    data =
+      # ABI.encode("mint(uint256)", Jason.decode!(plan.arguments))
+      ABI.encode("whitelistUsers(address, uint256)", [address, amount])
+      |> Base.encode16(case: :lower)
+
+    payload = %{to: plan.to, gas_limit: plan.gas_limit |> to_hex, gas_price: plan.gas_price * 1_000_000_000 |> to_hex, from: plan.from, value: 0, data: "0x" <> data}
+
+    # IO.inspect(payload)
+    # {:ok, plan}
+
+    case ETH.send_transaction(payload, priv_key) do
+      {:ok, hash} -> update_transaction_plan(plan, %{"status" => "wait_confirmation", "hash" => hash})
+      error -> IO.inspect(error)
+        update_transaction_plan(plan, %{"status" => "failed", "remark" => inspect(error)})
+    end
+  end
+
+
+  # Ethermass.Transaction.update_all_whitelist_count(23)
+  def update_all_whitelist_count(transaction_batch_id) do
+    query = from i in TransactionPlan,
+            where: i.transaction_batch_id == ^transaction_batch_id,
+            where: not is_nil(i.hash),
+            where: is_nil(i.whitelist_count) or i.whitelist_count == 0
+
+    Repo.all(query)
+    |> Enum.map(fn x ->
+
+      :timer.sleep(300);
+
+      update_whitelist_count(x)
+
+    end)
+  end
+
+  # Ethermass.Transaction.whitelist_count(23)
+  def whitelist_count(transaction_batch_id) do
+    query = from i in TransactionPlan,
+            where: i.transaction_batch_id == ^transaction_batch_id,
+            where: not is_nil(i.whitelist_count) and i.whitelist_count > 0,
+            select: count(i.id)
+
+    Repo.one(query)
+  end
+
+  # Ethermass.Transaction.reset_undefined_plan(23)
+  def reset_undefined_plan(transaction_batch_id) do
+    query = from i in TransactionPlan,
+            where: i.transaction_batch_id == ^transaction_batch_id,
+            where: i.status == "undefined"
+
+    Repo.all(query)
+    |> Enum.map(fn x -> update_transaction_plan(x, %{"hash" => nil, "status" => "unstarted", "attempt" => (x.attempt || 0) + 1}) end)
+  end
+
+
+  # Ethermass.Transaction.get_transaction_plan!(601) |> Ethermass.Transaction.update_whitelist_count()
+  def update_whitelist_count(%TransactionPlan{} = plan) do
+    if plan.transaction_type == "nft_whitelisting" do
+
+      address = plan.arguments |> String.split(",") |> List.first() |> String.replace("[", "")
+
+      case BaliverseContract.is_whitelisted(address) do
+        {:error, error} -> {:error, error}
+        number -> update_transaction_plan(plan, %{"whitelist_count" => number})
+      end
+
+    else
+      {:error, "Not NFT whitelist type"}
+    end
+  end
+
+  # Ethermass.Transaction.success_count(23)
+  def success_count(transaction_batch_id) do
+    query = from i in TransactionPlan,
+            where: i.transaction_batch_id == ^transaction_batch_id,
+            where: not is_nil(i.hash),
+            select: count(i.id)
+
+    Repo.one(query)
   end
 
   def to_hex(something) do
@@ -617,13 +926,14 @@ defmodule Ethermass.Transaction do
       "gas_price" => gas_price,
       "network" => Application.get_env(:ethereumex, :network),
       "title" => title,
-      "transaction_type" => "ETH transfer",
+      "transaction_type" => "eth_transfer",
       "value" => value,
       "transaction_batch_id" => transaction_batch_id,
       "address_id" => address_id
     }
     |> create_transaction_plan()
   end
+
 
   def create_mint_plan(from, to, value, gas_price, title, transaction_batch_id, address_id) do
     %{
