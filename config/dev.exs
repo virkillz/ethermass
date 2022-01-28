@@ -5,18 +5,18 @@ config :ethermass, Ethermass.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
-  database: "ethermass_dev",
+  database: "ethermass_mainnet_local",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
 
-  config :ethereumex,
-  network: "rinkeby",
-  url: "https://rinkeby.infura.io/v3/fb85ea4c06be41ebb69844eb7504e09d"
-
   # config :ethereumex,
-  # network: "mainnet",
-  # url: "https://mainnet.infura.io/v3/fb85ea4c06be41ebb69844eb7504e09d"
+  # network: "rinkeby",
+  # url: "https://rinkeby.infura.io/v3/fb85ea4c06be41ebb69844eb7504e09d"
+
+  config :ethereumex,
+  network: "mainnet",
+  url: "https://mainnet.infura.io/v3/fb85ea4c06be41ebb69844eb7504e09d"
 
 
 # For development, we disable any cache and enable

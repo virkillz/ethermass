@@ -102,7 +102,6 @@ defmodule EthermassWeb.TransactionBatchController do
       {:error, :transaction_batch, %Ecto.Changeset{} = changeset, _} ->
           render(conn, "new_mass_minting.html", changeset: changeset)
       error ->
-          IO.inspect(error)
         text(conn, "Error. Check console.")
     end
   end
@@ -123,8 +122,11 @@ defmodule EthermassWeb.TransactionBatchController do
   def show(conn, %{"id" => id}) do
     transaction_batch = Transaction.get_transaction_batch!(id)
 
+    summary = Ethermass.Transaction.get_status_summary(2)
+
     case transaction_batch.type do
-      "nft_whitelisting" -> render(conn, "show_batch_whitelist.html", transaction_batch: transaction_batch)
+      "nft_whitelisting" ->
+        render(conn, "show_batch_whitelist.html", transaction_batch: transaction_batch, summary: summary)
       _other -> render(conn, "show.html", transaction_batch: transaction_batch)
     end
 

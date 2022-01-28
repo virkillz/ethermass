@@ -3,7 +3,10 @@ defmodule BaliverseContract do
 # @contract "0xf4d6F145dCEACa8c49f1b267f29fFEd8dE6B11f2"
 # @contract "0x044691575fa502c099c8b61b1e79b225bec89b1f"
 # @contract "0x0917e55b6eec945d71bcc3bab61451a2cf289fcd"
-@contract "0xA7c90B3fBF944D0c366470Af796E810F9c177230"
+# @contract "0xA7c90B3fBF944D0c366470Af796E810F9c177230"
+
+#mainnet
+@contract "0x000a682feeeffc5e56a58a3b015fb07665d8a979"
 
 
 def all_functions() do

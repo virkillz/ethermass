@@ -1,3 +1,24 @@
+<style>
+
+.card {
+    border-radius: .4rem;
+    display: block;
+    letter-spacing: .1rem;
+    line-height: 3rem;
+    margin-bottom: 2.5rem;
+    text-align: center;
+    padding: 1rem;
+    color: white;
+}
+
+.card-number-big {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+
+</style>
+
 <h1>Transaction Batch Whitelisting Detail</h1>
 
 <ul>
@@ -50,13 +71,57 @@
 
 <div style="margin-top: 100px;"></div>
 
+  <h2>Stats</h2>
+  <div class="row">
+    <div class="column">
+      <div class="card" style="background: #264653;">
+        <div>Total</div>
+        <div><%=  @summary.total %></div>
+      </div>
+    </div>
+    <div class="column">
+      <div class="card" style="background: #2a9d8f;">
+        <div>Success</div>
+        <div><%= @summary.success  %></div>
+      </div>
+    </div>
+    <div class="column">
+      <div class="card" style="background: #e9c46a;">
+        <div>Unstarted </div>
+        <div><%= @summary.unstarted %></div>
+      </div>
+    </div>  
+    <div class="column">
+      <div class="card" style="background: #e9c46a;">
+        <div>Pending</div>
+        <div><%= @summary.undefined + @summary.wait_confirmation%></div>
+      </div>
+    </div>      
+    <div class="column">
+      <div class="card" style="background: #e9c46a;">
+        <div>Postponed </div>
+        <div><%= @summary.postponed %></div>
+      </div>
+    </div>       
+    <div class="column">
+      <div class="card" style="background: #f4a261;">
+        <div>Failed</div>
+        <div><%= @summary.failed_with_tx + @summary.failed_without_tx %></div>
+      </div>
+    </div>                  
+  </div>
+
+
+<div style="margin-top: 100px;"></div>
+
 <h2>Transaction Plans</h2>
 
 <table>
   <thead>
     <tr>
       <th>Action</th>  
-      <th>ID</th>  
+      <th>ID</th>
+      <th>Gas Price</th>
       <th>Whitelist Address</th>
       <th>Target</th>
       <th>Actual</th>
@@ -85,7 +150,8 @@
 
 
       </td>    
-      <td><%= transaction_plan.id %></td>   
+      <td><%= transaction_plan.id %></td> 
+      <td><%= transaction_plan.gas_price %></td>   
       <td>
           <div> <%= link get_target_address(transaction_plan.arguments), to: Ethermass.get_explorer_link(get_target_address(transaction_plan.arguments)), target: "_blank" %> </div>
           

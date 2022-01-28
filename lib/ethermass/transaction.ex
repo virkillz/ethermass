@@ -9,6 +9,8 @@ defmodule Ethermass.Transaction do
   alias Ethermass.Transaction.TransactionPlan
   alias Ethermass.Wallet
 
+  @priority_fee_gwei 5
+
   @doc """
   Returns the list of transaction_plans.
 
@@ -660,13 +662,14 @@ defmodule Ethermass.Transaction do
     end
   end
 
-  # Ethermass.Transaction.run_remaining_transaction(23)
+  # Ethermass.Transaction.run_remaining_transaction(2)
   def run_remaining_transaction(transaction_batch_id) do
 
       query = from i in TransactionPlan,
               where: i.transaction_batch_id == ^transaction_batch_id,
               where: i.status == "unstarted" and is_nil(i.hash),
-              limit: 100
+              order_by: (i.id),
+              limit: 25
 
       Repo.all(query)
       |> Enum.map(fn x ->
@@ -705,7 +708,7 @@ defmodule Ethermass.Transaction do
     update_transaction_plan(plan, %{"status" => result})
   end
 
-  # Ethermass.Transaction.update_wait_for_confirmation(23)
+  # Ethermass.Transaction.update_wait_for_confirmation(2)
   def update_wait_for_confirmation(transaction_batch_id) do
     list_wait_confirmation_transaction_plan(transaction_batch_id)
     |> Enum.map(fn x ->
@@ -716,7 +719,7 @@ defmodule Ethermass.Transaction do
     end)
   end
 
-  # Ethermass.Transaction.get_status_summary(23)
+  # Ethermass.Transaction.get_status_summary(2)
   def get_status_summary(transaction_batch_id) do
     query = from i in TransactionPlan,
             where: i.transaction_batch_id == ^transaction_batch_id
@@ -730,6 +733,7 @@ defmodule Ethermass.Transaction do
       wait_confirmation: result |> Enum.filter(fn x -> x.status == "wait_confirmation" end) |> Enum.count(),
       undefined: result |> Enum.filter(fn x -> x.status == "undefined" end) |> Enum.count(),
       unstarted: result |> Enum.filter(fn x -> x.status == "unstarted" end) |> Enum.count(),
+      postponed: result |> Enum.filter(fn x -> x.status == "postponed" end) |> Enum.count(),
       total: result |> Enum.count()
     }
 
@@ -811,39 +815,57 @@ defmodule Ethermass.Transaction do
 
   def run_nft_whitelist_plan(%TransactionPlan{} = plan) do
 
-    priv_key = Ethermass.Wallet.get_private_key(plan.from)
 
-    update_transaction_plan(plan, %{"status" => "in_progress"})
+    case ETH.Query.gas_price() do
+      {:ok, wei} ->
+        base_price_gwei = round(wei / 1000_000_000)
 
-    IO.inspect(plan.arguments)
+        priority_fee_gwei = @priority_fee_gwei
 
-    [string_address, amount] =
-      plan.arguments
-      |> String.replace("[0", "[\"0")
-      |> String.replace(",", "\",")
-      |> Jason.decode!()
+        old_total_gas = base_price_gwei + priority_fee_gwei
 
-    {:ok, address}  = EthContract.Util.address_to_bytes(string_address)
+        total_gas =
+        if old_total_gas < 88, do: 88, else: old_total_gas
 
-    data =
-      # ABI.encode("mint(uint256)", Jason.decode!(plan.arguments))
-      ABI.encode("whitelistUsers(address, uint256)", [address, amount])
-      |> Base.encode16(case: :lower)
+        if total_gas > plan.gas_price do
+          update_transaction_plan(plan, %{"status" => "postponed", "remark" => "Base gas price #{base_price_gwei} and priority fee is higher than limit #{plan.gas_price}"})
+        else
+          priv_key = Ethermass.Wallet.get_private_key(plan.from)
 
-    payload = %{to: plan.to, gas_limit: plan.gas_limit |> to_hex, gas_price: plan.gas_price * 1_000_000_000 |> to_hex, from: plan.from, value: 0, data: "0x" <> data}
+          update_transaction_plan(plan, %{"status" => "in_progress"})
 
-    # IO.inspect(payload)
-    # {:ok, plan}
 
-    case ETH.send_transaction(payload, priv_key) do
-      {:ok, hash} -> update_transaction_plan(plan, %{"status" => "wait_confirmation", "hash" => hash})
-      error -> IO.inspect(error)
-        update_transaction_plan(plan, %{"status" => "failed", "remark" => inspect(error)})
+          [string_address, amount] =
+            plan.arguments
+            |> String.replace("[0", "[\"0")
+            |> String.replace(",", "\",")
+            |> Jason.decode!()
+
+          {:ok, address}  = EthContract.Util.address_to_bytes(string_address)
+
+          data =
+            ABI.encode("whitelistUsers(address, uint256)", [address, amount])
+            |> Base.encode16(case: :lower)
+
+          payload = %{to: plan.to, gas_limit: plan.gas_limit |> to_hex, gas_price: total_gas * 1_000_000_000 |> to_hex, from: plan.from, value: 0, data: "0x" <> data}
+
+          case ETH.send_transaction(payload, priv_key) do
+            {:ok, hash} -> update_transaction_plan(plan, %{"status" => "wait_confirmation", "hash" => hash, "remark" => "Gas price: #{total_gas}"})
+            error -> IO.inspect(error)
+              update_transaction_plan(plan, %{"status" => "failed", "remark" => inspect(error)})
+          end
+        end
+
+
+      {:error, _} -> update_transaction_plan(plan, %{"status" => "postponed", "remark" => "Cannot get base price. Network issue. "})
     end
+
+
+
   end
 
 
-  # Ethermass.Transaction.update_all_whitelist_count(23)
+  # Ethermass.Transaction.update_all_whitelist_count(1)
   def update_all_whitelist_count(transaction_batch_id) do
     query = from i in TransactionPlan,
             where: i.transaction_batch_id == ^transaction_batch_id,
@@ -880,6 +902,60 @@ defmodule Ethermass.Transaction do
     |> Enum.map(fn x -> update_transaction_plan(x, %{"hash" => nil, "status" => "unstarted", "attempt" => (x.attempt || 0) + 1}) end)
   end
 
+  # Ethermass.Transaction.reset_failed_plan(2)
+  def reset_failed_plan(transaction_batch_id) do
+    query = from i in TransactionPlan,
+            where: i.transaction_batch_id == ^transaction_batch_id,
+            where: i.status == "failed"
+
+    Repo.all(query)
+    |> Enum.map(fn x -> update_transaction_plan(x, %{"hash" => nil, "status" => "unstarted", "attempt" => (x.attempt || 0) + 1}) end)
+  end
+
+
+  # Ethermass.Transaction.reset_postponed_plan(2)
+  def reset_postponed_plan(transaction_batch_id) do
+    query = from i in TransactionPlan,
+            where: i.transaction_batch_id == ^transaction_batch_id,
+            where: i.status == "postponed"
+
+    Repo.all(query)
+    |> Enum.map(fn x -> update_transaction_plan(x, %{"hash" => nil, "status" => "unstarted", "attempt" => (x.attempt || 0) + 1}) end)
+  end
+
+  # Ethermass.Transaction.release_pending_whitelist_tx(63,80,140)
+  def release_pending_whitelist_tx(transaction_plan_id, nonce, gas_price) do
+    plan = get_transaction_plan!(transaction_plan_id)
+
+
+      priv_key = Ethermass.Wallet.get_private_key(plan.from)
+
+      update_transaction_plan(plan, %{"status" => "in_progress"})
+
+
+      [string_address, amount] =
+        plan.arguments
+        |> String.replace("[0", "[\"0")
+        |> String.replace(",", "\",")
+        |> Jason.decode!()
+
+      {:ok, address}  = EthContract.Util.address_to_bytes(string_address)
+
+      data =
+        ABI.encode("whitelistUsers(address, uint256)", [address, amount])
+        |> Base.encode16(case: :lower)
+
+      payload = %{to: plan.to, nonce: nonce, gas_limit: plan.gas_limit |> to_hex, gas_price: gas_price * 1_000_000_000 |> to_hex, from: plan.from, value: 0, data: "0x" <> data}
+
+      case ETH.send_transaction(payload, priv_key) do
+        {:ok, hash} -> update_transaction_plan(plan, %{"status" => "wait_confirmation", "hash" => hash})
+        error -> IO.inspect(error)
+          update_transaction_plan(plan, %{"status" => "failed", "remark" => inspect(error)})
+      end
+
+
+  end
+
 
   # Ethermass.Transaction.get_transaction_plan!(601) |> Ethermass.Transaction.update_whitelist_count()
   def update_whitelist_count(%TransactionPlan{} = plan) do
@@ -905,6 +981,20 @@ defmodule Ethermass.Transaction do
             select: count(i.id)
 
     Repo.one(query)
+  end
+
+  # Ethermass.Transaction.update_all_gas_fee(1, 127)
+  def update_all_gas_fee(transaction_batch_id, new_max_gas_price) do
+    query = from i in TransactionPlan,
+            where: i.transaction_batch_id == ^transaction_batch_id,
+            where: is_nil(i.hash)
+
+    Repo.all(query)
+    |> Enum.map(fn x ->
+
+      update_transaction_plan(x, %{"gas_price" => new_max_gas_price})
+
+    end)
   end
 
   def to_hex(something) do

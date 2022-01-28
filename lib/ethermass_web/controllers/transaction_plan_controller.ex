@@ -37,6 +37,7 @@ defmodule EthermassWeb.TransactionPlanController do
         |> redirect(to: Routes.transaction_plan_path(conn, :show, transaction_plan))
 
       {:error, %Ecto.Changeset{} = changeset} ->
+        IO.inspect(changeset)
         render(conn, "new.html", changeset: changeset)
     end
   end

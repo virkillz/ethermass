@@ -10,12 +10,20 @@
   <%= error_tag f, :title %>
 
   <%= label f, :transaction_type %>
-  <%= select f, :transaction_type, ["NFT mint", "ERC20 transfer", "ETH transfer"] %>
+  <%= select f, :transaction_type, ["nft_whitelisting"] %>
   <%= error_tag f, :transaction_type %>
 
   <%= label f, :function %>
   <%= text_input f, :function %>
   <%= error_tag f, :function %>
+
+  <%= label f, :network %>
+  <%= text_input f, :network %>
+  <%= error_tag f, :network %>  
+
+  <%= label f, :transaction_batch_id %>
+  <%= number_input f, :transaction_batch_id %>
+  <%= error_tag f, :transaction_batch_id %>    
 
   <%= label f, :from %>
   <%= select f, :from, Ethermass.Wallet.list_addresses |> Enum.map(fn x -> {"#{x.eth_address} (#{x.label})", x.eth_address} end) %>
