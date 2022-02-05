@@ -94,9 +94,15 @@
     <div class="column">
       <div class="card" style="background: #e9c46a;">
         <div>Pending</div>
-        <div><%= @summary.undefined + @summary.wait_confirmation%></div>
+        <div><%= @summary.wait_confirmation%></div>
       </div>
-    </div>      
+    </div> 
+    <div class="column">
+      <div class="card" style="background: #e9c46a;">
+        <div>Not found</div>
+        <div><%= @summary.undefined %></div>
+      </div>
+    </div>          
     <div class="column">
       <div class="card" style="background: #e9c46a;">
         <div>Postponed </div>
@@ -136,17 +142,23 @@
     <tr>
       <td>
         
-        <%= if transaction_plan.status == "in_progress" do %>
-          <a class="share-dialog" href="" title="Start The Process"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-pause"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg></a>
-        <% else %>  
 
-          <%= if transaction_plan.status == "finished" do %>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="teal" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          <% else %>
+
+        <%= if Enum.member?(["unstarted", "failed", "postponed"], transaction_plan.status) do %>
             <a class="share-dialog" href={"/transaction_plan/#{transaction_plan.id}/run"} title="Start The Process"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-play"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></a>  
-          <% end %>
+        <% end %>  
 
+        <%= if transaction_plan.status == "success" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="teal" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
         <% end %>
+
+
+
+        <%= if transaction_plan.status == "wait_confirmation" do %>
+
+          <a class="share-dialog" href={"/transaction_plan/#{transaction_plan.id}/get_status"} title="Start The Process"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-refresh-cw"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></a>
+
+        <% end %>        
 
 
       </td>    
@@ -168,7 +180,7 @@
       <td>
         <span><%= link "Show", to: Routes.transaction_plan_path(@conn, :show, transaction_plan) %></span>
         <span><%# link "Edit", to: Routes.transaction_plan_path(@conn, :edit, transaction_plan) %></span>
-        <span><%= link "Delete", to: Routes.transaction_plan_path(@conn, :delete, transaction_plan), method: :delete, data: [confirm: "Are you sure?"] %></span>
+        <span><%# link "Delete", to: Routes.transaction_plan_path(@conn, :delete, transaction_plan), method: :delete, data: [confirm: "Are you sure?"] %></span>
       </td>
     </tr>
 <% end %>

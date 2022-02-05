@@ -20,11 +20,13 @@
         <nav>
           <ul>
             <li><a href="/"><i style="height: 14px;" data-feather="home"></i> Home</a></li>          
-            <li><a href="/transaction_batch"><i style="height: 14px;" data-feather="briefcase"></i> Transaction Batch</a></li>
-            <li><a href="/addresses"><i style="height: 14px;" data-feather="at-sign"></i> Address Book</a></li>
-            <li><a href="/smart_contracts"><i style="height: 14px;" data-feather="book-open"></i> Smart Contract</a></li>            
-            
+           <!-- <li><a href="/transaction_batch"><i style="height: 14px;" data-feather="briefcase"></i> Transaction Batch</a></li>
+            <li><a href="/addresses"><i style="height: 14px;" data-feather="at-sign"></i> Address Book</a></li> -->
+            <li><a href="/smart_contracts"><i style="height: 14px;" data-feather="book-open"></i> Smart Contract</a></li> 
+            <li><a href="/owner_list"><i style="height: 14px;" data-feather="book-open"></i> NFT Owner List</a></li>
+            <li><a href="/market_maker"><i style="height: 14px;" data-feather="book-open"></i> Market Maker</a></li>            
           </ul>
+          <%= render "_user_menu.html", assigns %>
         </nav>
 
         network: <%= Ethermass.get_network() %>

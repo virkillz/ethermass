@@ -9,7 +9,7 @@ defmodule Ethermass.Transaction do
   alias Ethermass.Transaction.TransactionPlan
   alias Ethermass.Wallet
 
-  @priority_fee_gwei 5
+  @priority_fee_gwei 3
 
   @doc """
   Returns the list of transaction_plans.
@@ -882,6 +882,64 @@ defmodule Ethermass.Transaction do
     end)
   end
 
+   # Ethermass.Transaction.update_all_nft_balance(1)
+   def update_all_nft_balance(transaction_batch_id) do
+    query = from i in TransactionPlan,
+            where: i.transaction_batch_id == ^transaction_batch_id,
+            where: not is_nil(i.hash),
+            where: is_nil(i.nft_balance) or i.nft_balance == 0
+
+    Repo.all(query)
+    |> Enum.map(fn x ->
+
+      :timer.sleep(300);
+
+      update_nft_balance(x)
+
+    end)
+  end
+
+  # Ethermass.Transaction.miss_whitelist(2)
+  def miss_whitelist(transaction_batch_id) do
+    query = from i in TransactionPlan,
+            where: i.transaction_batch_id == ^transaction_batch_id
+
+    table_data =
+      Repo.all(query)
+      |> Enum.map(fn x ->
+
+        [string_address, amount] =
+          x.arguments
+          |> String.replace("[0", "[\"0")
+          |> String.replace(",", "\",")
+          |> Jason.decode!()
+
+      %{
+        address: string_address,
+        whitelisted_count: amount,
+        nft_balance: x.nft_balance,
+      }
+
+      end)
+      |> Enum.filter(fn x ->
+
+      x.whitelisted_count > x.nft_balance
+
+      end)
+      |> Enum.map(fn x ->
+
+        [x.address, x.whitelisted_count, x.nft_balance]
+
+      end)
+
+    file = File.open!("test.csv", [:write, :utf8])
+    table_data |> CSV.encode |> Enum.each(&IO.write(file, &1))
+
+
+
+
+  end
+
   # Ethermass.Transaction.whitelist_count(23)
   def whitelist_count(transaction_batch_id) do
     query = from i in TransactionPlan,
@@ -966,6 +1024,21 @@ defmodule Ethermass.Transaction do
       case BaliverseContract.is_whitelisted(address) do
         {:error, error} -> {:error, error}
         number -> update_transaction_plan(plan, %{"whitelist_count" => number})
+      end
+
+    else
+      {:error, "Not NFT whitelist type"}
+    end
+  end
+
+  def update_nft_balance(%TransactionPlan{} = plan) do
+    if plan.transaction_type == "nft_whitelisting" do
+
+      address = plan.arguments |> String.split(",") |> List.first() |> String.replace("[", "")
+
+      case BaliverseContract.balance_of(address) do
+        {:error, error} -> {:error, error}
+        {:ok, number} -> update_transaction_plan(plan, %{"nft_balance" => number})
       end
 
     else

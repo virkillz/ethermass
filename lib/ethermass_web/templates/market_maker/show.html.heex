@@ -1,0 +1,33 @@
+<h1>Show Market maker</h1>
+
+<ul>
+
+  <li>
+    <strong>Address:</strong>
+    <%= @market_maker.address %>
+  </li>
+
+  <li>
+    <strong>Group:</strong>
+    <%= @market_maker.group %>
+  </li>
+
+  <li>
+    <strong>Nft balance:</strong>
+    <%= @market_maker.nft_balance %>
+  </li>
+
+  <li>
+    <strong>Eth balance:</strong>
+    <%= @market_maker.eth_balance %>
+  </li>
+
+  <li>
+    <strong>Last check:</strong>
+    <%= @market_maker.last_check %>
+  </li>
+
+</ul>
+
+<span><%= link "Edit", to: Routes.market_maker_path(@conn, :edit, @market_maker) %></span> |
+<span><%= link "Back", to: Routes.market_maker_path(@conn, :index) %></span>

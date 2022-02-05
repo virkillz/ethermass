@@ -17,7 +17,17 @@ defmodule EthermassWeb.PageController do
         {:error, _} -> "n/a"
       end
 
-    render(conn, "index.html", gas_cost: gas_cost, owned_nft: owned_nft, gas_price_protocol: gas_price_protocol)
+    mm_summary =  Ethermass.Monitoring.list_market_maker_summary()
+
+    render(conn, "index.html", mm_summary: mm_summary, gas_cost: gas_cost, owned_nft: owned_nft, gas_price_protocol: gas_price_protocol)
+  end
+
+  def all_nft(conn, _) do
+
+    range = 1..8000
+
+
+    render(conn, "test.html", range: range)
   end
 
   def mass_funding_index(conn, _params) do

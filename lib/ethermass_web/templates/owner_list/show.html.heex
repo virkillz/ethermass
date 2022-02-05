@@ -1,0 +1,33 @@
+<h1>Show Owner list</h1>
+
+<ul>
+
+  <li>
+    <strong>Token:</strong>
+    <%= @owner_list.token_id %>
+  </li>
+
+  <li>
+    <strong>Address:</strong>
+    <%= @owner_list.address %>
+  </li>
+
+  <li>
+    <strong>Last check:</strong>
+    <%= @owner_list.last_check %>
+  </li>
+
+  <li>
+    <strong>Token type:</strong>
+    <%= @owner_list.token_type %>
+  </li>
+
+  <li>
+    <strong>Remark:</strong>
+    <%= @owner_list.remark %>
+  </li>
+
+</ul>
+
+<span><%= link "Edit", to: Routes.owner_list_path(@conn, :edit, @owner_list) %></span> |
+<span><%= link "Back", to: Routes.owner_list_path(@conn, :index) %></span>

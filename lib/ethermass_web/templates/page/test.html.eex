@@ -1,0 +1,7 @@
+
+
+
+    <%= for i <- @range do %>
+        <div><%# link "Baliverse ##{i}", to: "https://api.opensea.io/api/v1/asset/0x000a682feeeffc5e56a58a3b015fb07665d8a979/#{i}/?force_update=true" , target: "_blank", rel: "noopener noreferrer" %></div>
+        <div><%= link "Baliverse ##{i}", to: "https://api.opensea.io/api/v1/asset/0x000a682feeeffc5e56a58a3b015fb07665d8a979/#{i}/?force_update=true", id: "#{i}" %></div>
+    <% end %> %>

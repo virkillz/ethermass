@@ -80,6 +80,54 @@
   </div>
 
 
+<h1>Market Maker Summary</h1>
+
+<table >
+  <thead>
+    <tr>
+      <th>Group</th>
+      <th># Wallet</th>
+      <th># Active Wallet</th>
+      <th># NFT</th>
+      <th> NFT Floor</th>
+      <th> Est ETh Value</th>
+      <th> ETH Balance</th>
+      <th> Total</th>
+      <th> Capital</th>
+      <th> Return</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for x <- @mm_summary do %>
+    <tr>
+      <td><%= x.name %></td>
+      <td><%= x.wallet %></td>
+      <td><%= x.wallet_active %></td>
+      <td><%= x.nft_balance %></td>
+      <td><%= x.nft_floor %></td>
+      <td><%= Float.round(x.est_nft_value,2) %></td>
+      <td><%= Float.round(x.eth_balance,2) %></td>
+      <td><%= Float.round(x.total_value,2) %></td>
+      <td><%= x.capital %></td>
+      <td><%= Float.round(x.return,2) %>%</td>
+    </tr>
+<% end %>
+<tr>
+  <td><b>Total</b></td>
+  <td><b><%= @mm_summary |> Enum.reduce(0, fn x, acc -> acc + x.wallet end) %></b></td>
+  <td><b><%= @mm_summary |> Enum.reduce(0, fn x, acc -> acc + x.wallet_active end) %></b></td>
+  <td><b><%= @mm_summary |> Enum.reduce(0, fn x, acc -> acc + x.nft_balance end) %></b></td>
+  <td></td>
+  <td><b><%= @mm_summary |> Enum.reduce(0, fn x, acc -> acc + x.est_nft_value end) |> Float.round(2) %></b></td>
+  <td><b><%= @mm_summary |> Enum.reduce(0, fn x, acc -> acc + x.eth_balance end) |> Float.round(2) %></b></td>
+  <td><b><%= @mm_summary |> Enum.reduce(0, fn x, acc -> acc + x.total_value end) |> Float.round(2) %></b></td>
+  <td><b><%= @mm_summary |> Enum.reduce(0, fn x, acc -> acc + x.capital end) |> Float.round(2) %></b></td>
+  <td></td>            
+</tr>
+  </tbody>
+</table>
 
 
 </div>

@@ -122,7 +122,7 @@ defmodule EthermassWeb.TransactionBatchController do
   def show(conn, %{"id" => id}) do
     transaction_batch = Transaction.get_transaction_batch!(id)
 
-    summary = Ethermass.Transaction.get_status_summary(2)
+    summary = Ethermass.Transaction.get_status_summary(transaction_batch.id)
 
     case transaction_batch.type do
       "nft_whitelisting" ->

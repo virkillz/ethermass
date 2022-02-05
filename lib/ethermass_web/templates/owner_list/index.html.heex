@@ -1,0 +1,30 @@
+<h1>Baliverse NFT Owner list</h1>
+
+<table id="myTable">
+  <thead>
+    <tr>
+      <th>Token ID</th>
+      <th>Address</th>
+      <th>Last check</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for owner_list <- @owner_list do %>
+    <tr>
+      <td>#<%= owner_list.token_id %></td>
+      <td><%= owner_list.address %></td>
+      <td><%= owner_list.last_check %></td>
+
+      <td>
+        <span><%= link "Show", to: Routes.owner_list_path(@conn, :show, owner_list) %></span>
+        <span><%# link "Edit", to: Routes.owner_list_path(@conn, :edit, owner_list) %></span>
+        <span><%# link "Delete", to: Routes.owner_list_path(@conn, :delete, owner_list), method: :delete, data: [confirm: "Are you sure?"] %></span>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<span><%= link "New Owner list", to: Routes.owner_list_path(@conn, :new) %></span>

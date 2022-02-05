@@ -39,6 +39,30 @@ defmodule Ethermass do
     end
   end
 
+
+  @spec refresh_metadata ::
+          {:error, HTTPoison.Error.t()}
+          | {:ok,
+             %{
+               :__struct__ => HTTPoison.AsyncResponse | HTTPoison.Response,
+               optional(:body) => any,
+               optional(:headers) => list,
+               optional(:id) => reference,
+               optional(:request) => HTTPoison.Request.t(),
+               optional(:request_url) => any,
+               optional(:status_code) => integer
+             }}
+  def refresh_metadata() do
+    header = [
+      {"accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"},
+      {"User-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.99 Safari/537.36"},
+      {"referrer", "https://api.opensea.io/api/v1/assets"},
+      {"authority", "api.opensea.io"},
+      {"cookie", "_gcl_au=1.1.1259710186.1641227868; amp_d28823=QK0DF49EgSw0L1fqdITwgW...1fok0bkok.1fok0c4kf.2.2.4; _ga_QN8V4MT4GF=GS1.1.1643284105.1.1.1643284204.0; _gid=GA1.2.1886916850.1643768440; _ga_9VSBF2K4BX=GS1.1.1643803304.21.1.1643806942.0; _ga=GA1.2.1872919539.1641227868; amp_ddd6ec=vKBvSWjXTP-wF5Cpv3Mjbi...1fqt4vo0h.1fqt8f808.fn.ec.u3; __cf_bm=0qWD9ksZW3HmQFWFLRpypLGPGRUypVBW1znG06Y1ysg-1643807761-0-AYEBnrLwzCLV+8DVQleDs4X3atcfGy5ZJw7UxHKE0Y3w1JLzl0GAhqiEFdOjyuWH/MHeQ8Hy7uhXQxyf4pEKDbI="}]
+    HTTPoison.get("https://api.opensea.io/api/v1/asset/0x000a682feeeffc5e56a58a3b015fb07665d8a979/1191/?force_update=true", header)
+  end
+
+
   def private_key_to_address(private_key) do
     try do
 

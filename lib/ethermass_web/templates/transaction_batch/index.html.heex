@@ -7,7 +7,6 @@
       <th>Title</th>
       <th>Type</th>
       <th>Plan Count</th>
-      <th>Status</th>
 
       <th></th>
     </tr>
@@ -22,12 +21,11 @@
       <%= transaction_batch.type %>
       </td>
       <td><%= transaction_batch.transaction_plan |> Enum.count %></td>
-      <td><%= transaction_batch.status |> String.capitalize %></td>
 
       <td>
         <span><%= link "Detail", to: Routes.transaction_batch_path(@conn, :show, transaction_batch) %></span>
         <span><%# link "Edit", to: Routes.transaction_batch_path(@conn, :edit, transaction_batch) %></span>
-        <span><%= link "Delete", to: Routes.transaction_batch_path(@conn, :delete, transaction_batch), method: :delete, data: [confirm: "Are you sure?"] %></span>
+        <span><%# link "Delete", to: Routes.transaction_batch_path(@conn, :delete, transaction_batch), method: :delete, data: [confirm: "Are you sure?"] %></span>
       </td>
     </tr>
 <% end %>

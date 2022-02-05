@@ -175,6 +175,13 @@ def owner() do
   end
 end
 
+def owner_of(token_id) do
+  case call("ownerOf", [token_id]) do
+    [addr_binary] -> {:ok, "0x" <> (addr_binary |> Base.encode16())}
+      _other -> {:error, "Network issue"}
+  end
+end
+
 def balance_of(address) do
   balance_of(address, @contract)
 end
