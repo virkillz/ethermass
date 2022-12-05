@@ -9,11 +9,9 @@ config :ethermass, Ethermass.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
-
-  config :ethereumex,
-  network: "mainnet",
-  url: "https://infura.io/v3/fb85ea4c06be41ebb69844eb7504e09d"
-
+config :ethereumex,
+  network: "goerli",
+  url: "https://goerli.infura.io/v3/fb85ea4c06be41ebb69844eb7504e09d"
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
