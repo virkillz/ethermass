@@ -5,7 +5,7 @@ config :ethermass, Ethermass.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
-  database: "ethermass_mainnet_local",
+  database: "ethermass_goerli_local",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 

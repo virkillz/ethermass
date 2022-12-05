@@ -55,8 +55,8 @@
 <table>
   <thead>
     <tr>
-      <th>Action</th>  
-      <th>ID</th>  
+      <th>Action</th>
+      <th>ID</th>
       <th>From</th>
       <th>To</th>
       <th>Value</th>
@@ -70,32 +70,35 @@
 <%= for transaction_plan <- @transaction_batch.transaction_plan do %>
     <tr>
       <td>
-        
+
         <%= if transaction_plan.status == "in_progress" do %>
           <a class="share-dialog" href="" title="Start The Process"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-pause"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg></a>
-        <% else %>  
+        <% end %>
 
           <%= if transaction_plan.status == "finished" do %>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="teal" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          <% else %>
-            <a class="share-dialog" href={"/transaction_plan/#{transaction_plan.id}/run"} title="Start The Process"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-play"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></a>  
           <% end %>
 
-        <% end %>
+
+          <%= if transaction_plan.status == "unstarted" do %>
+            <a class="share-dialog" href={"/transaction_plan/#{transaction_plan.id}/run"} title="Start The Process"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-play"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></a>
+          <% end %>
 
 
-      </td>    
-      <td><%= transaction_plan.id %></td>   
+
+
+      </td>
+      <td><%= transaction_plan.id %></td>
       <td>
           <%= link truncate_address(transaction_plan.from), to: Ethermass.get_explorer_link(transaction_plan.from), target: "_blank" %>
-      
+
       </td>
       <td><%= truncate_address(transaction_plan.to) %></td>
       <td><%= transaction_plan.value |> :erlang.float_to_binary([:compact, { :decimals, 20 }]) %></td>
       <td>
-      
+
       <%= link transaction_plan.hash, to: Ethermass.get_explorer_link(transaction_plan.hash, "tx"), target: "_blank" %>
-      
+
       </td>
       <td><%= transaction_plan.status %></td>
 

@@ -10,21 +10,21 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css">
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/app.js")}></script>
     <script src="https://unpkg.com/feather-icons"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>    
-    
-    
+<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+
+
   </head>
   <body>
     <header>
       <section class="container">
         <nav>
           <ul>
-            <li><a href="/"><i style="height: 14px;" data-feather="home"></i> Home</a></li>          
-           <!-- <li><a href="/transaction_batch"><i style="height: 14px;" data-feather="briefcase"></i> Transaction Batch</a></li>
-            <li><a href="/addresses"><i style="height: 14px;" data-feather="at-sign"></i> Address Book</a></li> -->
-            <li><a href="/smart_contracts"><i style="height: 14px;" data-feather="book-open"></i> Smart Contract</a></li> 
+            <li><a href="/"><i style="height: 14px;" data-feather="home"></i> Home</a></li>
+            <li><a href="/transaction_batch"><i style="height: 14px;" data-feather="briefcase"></i> Transaction Batch</a></li>
+            <li><a href="/addresses"><i style="height: 14px;" data-feather="at-sign"></i> Address Book</a></li>
+            <!--<li><a href="/smart_contracts"><i style="height: 14px;" data-feather="book-open"></i> Smart Contract</a></li>
             <li><a href="/owner_list"><i style="height: 14px;" data-feather="book-open"></i> NFT Owner List</a></li>
-            <li><a href="/market_maker"><i style="height: 14px;" data-feather="book-open"></i> Market Maker</a></li>            
+            <li><a href="/market_maker"><i style="height: 14px;" data-feather="book-open"></i> Market Maker</a></li>      -->
           </ul>
           <%= render "_user_menu.html", assigns %>
         </nav>
@@ -48,6 +48,6 @@
       $(document).ready( function () {
       $('#myTable').DataTable();
       } );
-    </script>    
+    </script>
   </body>
 </html>

@@ -18,84 +18,78 @@ defmodule Ethermass.Wallet do
 
   """
   def list_addresses do
-    query = from i in Address,
-          order_by: i.id
+    query =
+      from i in Address,
+        order_by: i.id
+
     Repo.all(query)
   end
 
   def list_addresses_only do
-    query = from i in Address,
-          order_by: i.id,
-          select: i.eth_address
+    query =
+      from i in Address,
+        order_by: i.id,
+        select: i.eth_address
 
     Repo.all(query)
   end
 
   def validate_csv_batch_import(file_path) do
     if File.exists?(file_path) do
-
       any_error =
-      File.stream!(file_path)
-      |> CSV.decode
-      |> Enum.filter(fn {status, _value} -> status == :error end)
-      |> List.first()
+        File.stream!(file_path)
+        |> CSV.decode()
+        |> Enum.filter(fn {status, _value} -> status == :error end)
+        |> List.first()
 
       case any_error do
         nil ->
+          [title | content] =
+            File.stream!(file_path)
+            |> CSV.decode()
+            |> Enum.map(fn {_status, value} -> value end)
 
-        [title | content] =
-          File.stream!(file_path)
-          |> CSV.decode
-          |> Enum.map(fn {_status, value} -> value end)
+          if Enum.count(title) == 2 do
+            validation =
+              content
+              |> Enum.with_index()
+              |> Enum.map(fn {value, index} ->
+                [address, priv_key] = value
 
-        if Enum.count(title) == 2 do
+                address_error =
+                  if String.starts_with?(address, "0x") do
+                    ""
+                  else
+                    "Address in wrong format. "
+                  end
 
-          validation =
-            content
-            |> Enum.with_index()
-            |> Enum.map(fn {value, index} ->
+                private_key_error =
+                  case Ethermass.private_key_to_address(priv_key) do
+                    {:ok, _addr} -> ""
+                    {:error, error} -> error
+                  end
 
-            [address, priv_key] = value
+                error = address_error <> private_key_error
 
-            address_error =
-              if String.starts_with?(address, "0x") do
-                ""
-              else
-                "Address in wrong format. "
-              end
+                if error == "" do
+                  {:ok, value}
+                else
+                  {:error, "Error line #{index + 2}. " <> error}
+                end
+              end)
+              |> Enum.filter(fn {status, _value} -> status == :error end)
+              |> List.first()
 
-
-            private_key_error =
-              case Ethermass.private_key_to_address(priv_key) do
-                {:ok, _addr} -> ""
-                {:error, error} -> error
-              end
-
-
-
-            error = address_error <> private_key_error
-
-            if error == "" do
-              {:ok, value}
-            else
-              {:error, "Error line #{index + 2}. " <> error}
+            case validation do
+              nil -> {:ok, file_path}
+              {:error, reason} -> {:error, reason}
             end
-
-            end)
-          |> Enum.filter(fn {status, _value} -> status == :error end)
-          |> List.first()
-
-
-          case validation do
-            nil -> {:ok, file_path}
-            {:error, reason} -> {:error, reason}
+          else
+            {:error, "CSV format must be = address,private_key"}
           end
 
-        else
-          {:error, "CSV format must be = address,private_key"}
-        end
-
-        {:error, reason} -> {:error, reason}
+        {:error, reason} ->
+          {:error, reason}
       end
     else
       {:error, "File cannot be founded."}
@@ -121,9 +115,10 @@ defmodule Ethermass.Wallet do
   def get_address!(id), do: Repo.get!(Address, id)
 
   def get_private_key(address) do
-    query = from i in Address,
-            where: i.eth_address == ^address,
-            select: i.private_key
+    query =
+      from i in Address,
+        where: i.eth_address == ^address,
+        select: i.private_key
 
     Repo.one(query)
   end
@@ -147,55 +142,51 @@ defmodule Ethermass.Wallet do
   end
 
   def batch_import_address(attrs \\ %{}) do
+    changeset =
+      %Address{}
+      |> Address.changeset_batch_import(attrs)
 
-  changeset =
-    %Address{}
-    |> Address.changeset_batch_import(attrs)
     # |> Repo.insert()
 
-  if changeset.valid? do
+    if changeset.valid? do
       IO.inspect("bener")
       file_path = attrs["csv_source"]
 
-
       [_title | content] =
-      File.stream!(file_path)
-      |> CSV.decode
-      |> Enum.map(fn {_status, value} -> value end)
+        File.stream!(file_path)
+        |> CSV.decode()
+        |> Enum.map(fn {_status, value} -> value end)
 
       content
       |> Enum.map(fn [address, priv_key] ->
-
         case Ethermass.private_key_to_address(priv_key) do
-            {:ok, address} ->
-              %{
-                "eth_address" => address.eth_address,
-                "mneumonic_phrase" => address.mnemonic_phrase,
-                "private_key" => address.private_key,
-                "public_key" => address.public_key,
-                "label" => attrs["label"]
-              }
-              |> create_address()
-            {:error, reason} ->
-              IO.inspect("Failed: #{address} . Reason: #{reason}")
-              :error
+          {:ok, address} ->
+            %{
+              "eth_address" => address.eth_address,
+              "mneumonic_phrase" => address.mnemonic_phrase,
+              "private_key" => address.private_key,
+              "public_key" => address.public_key,
+              "label" => attrs["label"]
+            }
+            |> create_address()
+
+          {:error, reason} ->
+            IO.inspect("Failed: #{address} . Reason: #{reason}")
+            :error
         end
+      end)
 
-       end)
-
-
-    {:ok, "success"}
-  else
-    IO.inspect("salah")
-    {:error, Map.put(changeset, :action, :insert)}
+      {:ok, "success"}
+    else
+      IO.inspect("salah")
+      {:error, Map.put(changeset, :action, :insert)}
+    end
   end
-
-  end
-
 
   def count_owned_nft() do
-    query = from i in Address,
-            select: sum(i.nft_balance)
+    query =
+      from i in Address,
+        select: sum(i.nft_balance)
 
     Repo.one(query)
   end
@@ -204,19 +195,26 @@ defmodule Ethermass.Wallet do
   def update_balance_nft() do
     list_addresses()
     |> Enum.each(fn x ->
-
-      :timer.sleep(500);
+      :timer.sleep(500)
       update_nft_balance(x)
-
     end)
-
   end
 
   def get_address_by(:address, address) do
-    query = from i in Address,
-    where: i.eth_address == ^address
+    query =
+      from i in Address,
+        where: i.eth_address == ^address
 
     Repo.one!(query)
+  end
+
+  # Ethermass.Wallet.update_all_eth_balance()
+  def update_all_eth_balance() do
+    list_addresses()
+    |> Enum.each(fn x ->
+      update_eth_balance(x)
+      :timer.sleep(1000)
+    end)
   end
 
   def update_eth_balance(%Address{} = address) do
@@ -224,7 +222,9 @@ defmodule Ethermass.Wallet do
       {:ok, result} ->
         {:ok, updated_address} = update_address(address, %{"eth_balance" => result})
         updated_address
-      _other -> address
+
+      _other ->
+        address
     end
   end
 
@@ -233,7 +233,9 @@ defmodule Ethermass.Wallet do
       {:ok, result} ->
         {:ok, updated_address} = update_address(address, %{"nft_balance" => result})
         updated_address
-      _other -> address
+
+      _other ->
+        address
     end
   end
 
@@ -241,6 +243,7 @@ defmodule Ethermass.Wallet do
     %Address{}
     |> Address.changeset_generate(attrs)
     |> generate_address_recursion(attrs)
+
     # |> Repo.insert()
   end
 
@@ -250,32 +253,25 @@ defmodule Ethermass.Wallet do
     |> Repo.insert()
   end
 
-
   def generate_address_recursion(%Ecto.Changeset{valid?: false} = changeset, _attrs) do
     Repo.insert(changeset)
   end
 
   def generate_address_recursion(%Ecto.Changeset{valid?: true} = changeset, attrs) do
-
     how_many = attrs["how_many"] |> String.to_integer()
 
     if how_many > 1 do
-
-      Range.new(1,how_many)
+      Range.new(1, how_many)
       |> Enum.to_list()
       |> Enum.map(fn x ->
-
         new_label = attrs["label"] <> " #{x}"
 
         attrs
         |> Map.put("label", new_label)
         |> Map.put("how_many", "1")
         |> generate_address()
-
       end)
-      |> List.last
-
-
+      |> List.last()
     else
       Repo.insert(changeset)
     end
